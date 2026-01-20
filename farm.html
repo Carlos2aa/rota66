@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>ROTA66_TERMINAL_V1.0.4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --term-green: #00ff41;
+      --term-bg: #050505;
+      --term-dim: #003b00;
+    }
+
+    body {
+      background-color: var(--term-bg);
+      color: var(--term-green);
+      font-family: 'Fira Code', monospace;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Efeito de linhas de monitor antigo (CRT) */
+    body::after {
+      content: " ";
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .terminal-window {
+      width: 650px;
+      background: rgba(10, 10, 10, 0.95);
+      border: 1px solid var(--term-green);
+      box-shadow: 0 0 20px var(--term-dim);
+      padding: 20px;
+      position: relative;
+    }
+
+    /* Cabeçalho do Terminal */
+    .terminal-header {
+      border-bottom: 1px solid var(--term-green);
+      margin-bottom: 20px;
+      padding-bottom: 5px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin: 10px 0;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .prompt-label { color: var(--term-green); margin-bottom: 5px; display: block; }
+    .prompt-label::before { content: "root@rota66:~$ "; opacity: 0.7; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    input {
+      background: transparent;
+      border: none;
+      border-bottom: 1px solid var(--term-dim);
+      color: var(--term-green);
+      font-family: 'Fira Code', monospace;
+      width: 100%;
+      outline: none;
+      padding: 5px 0;
+    }
+
+    input:focus {
+      border-bottom: 1px solid var(--term-green);
+      background: rgba(0, 255, 65, 0.05);
+    }
+
+    /* Custom File Input */
+    .file-input-container {
+      border: 1px dashed var(--term-dim);
+      padding: 10px;
+      margin: 10px 0;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    #total-display {
+      border: 1px solid var(--term-green);
+      padding: 10px;
+      text-align: center;
+      margin: 20px 0;
+      font-weight: bold;
+      background: var(--term-dim);
+      color: white;
+    }
+
+    button {
+      background: var(--term-green);
+      color: var(--term-bg);
+      border: none;
+      width: 100%;
+      padding: 15px;
+      font-family: 'Fira Code', monospace;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      background: white;
+      box-shadow: 0 0 15px white;
+    }
+
+    /* Cursor piscante */
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 18px;
+      background: var(--term-green);
+      animation: blink 1s infinite;
+      vertical-align: middle;
+    }
+
+    @keyframes blink {
+      0%, 49% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+
+    .status-msg {
+      margin-top: 15px;
+      font-size: 14px;
+      height: 20px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <span>SESSION: ROTA66_FARM</span>
+      <span>V1.0.4-STABLE By:Coroa</span>
+    </div>
+
+    <h1>> SYSTEM ACCESS AUTHORIZED <span class="cursor"></span></h1>
+
+    <div style="margin-bottom: 20px;">
+      <label class="prompt-label">IDENT_OPERADOR</label>
+      <input type="text" id="discordId" placeholder="ID_DISCORD_">
+    </div>
+
+    <label class="prompt-label">QUANTITY_INPUT</label>
+    <div class="grid">
+      <div class="field"><input type="number" id="barra" placeholder="[BARRA_FERRO]" min="0"></div>
+      <div class="field"><input type="number" id="borracha" placeholder="[BORRACHA]" min="0"></div>
+      <div class="field"><input type="number" id="prego" placeholder="[PREGO]" min="0"></div>
+      <div class="field"><input type="number" id="bateria" placeholder="[BATERIA]" min="0"></div>
+      <div class="field"><input type="number" id="circuito" placeholder="[CIRCUITO]" min="0"></div>
+      <div class="field"><input type="number" id="vidro" placeholder="[VIDRO]" min="0"></div>
+      <div class="field"><input type="number" id="aluminio" placeholder="[ALUMINIO]" min="0"></div>
+      <div class="field"><input type="number" id="papel" placeholder="[PAPEL]" min="0"></div>
+    </div>
+
+    <label class="prompt-label">ATTACH_IMAGE_LOG</label>
+    <input type="file" id="imagem" accept="image/*">
+
+    <div id="total-display">TOTAL_UNITS: 0</div>
+
+    <button id="enviar">./execute_upload.sh</button>
+
+    <div class="status-msg" id="status"></div>
+  </div>
+
+  <script>
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1463284882938659062/iuwHsxqEdLglekvLuYmpBKnwXzxzURx2wUz7HTXg_7LmT7ymh4xVoxaI67LbI2I_uj5-";
+    const itemIds = ['barra','borracha','prego','bateria','circuito','vidro','aluminio','papel'];
+    const discordIdInput = document.getElementById('discordId');
+    const totalDisplay = document.getElementById('total-display');
+
+    discordIdInput.value = localStorage.getItem('farm_discord_id') || '';
+    discordIdInput.addEventListener('input', () => localStorage.setItem('farm_discord_id', discordIdInput.value));
+
+    function calcularTotal() {
+      let total = 0;
+      itemIds.forEach(id => {
+        total += parseInt(document.getElementById(id).value || 0);
+      });
+      totalDisplay.textContent = `TOTAL_UNITS: ${total}`;
+      return total;
+    }
+
+    itemIds.forEach(id => {
+      document.getElementById(id).addEventListener('input', calcularTotal);
+    });
+
+    document.getElementById('enviar').addEventListener('click', async () => {
+      const status = document.getElementById('status');
+      const imagem = document.getElementById('imagem').files[0];
+      const total = calcularTotal();
+
+      if (!discordIdInput.value || total === 0 || !imagem) {
+        status.innerHTML = "<span style='color: #ff0000'>> ERROR: DATA_MISSING</span>";
+        return;
+      }
+
+      status.innerHTML = "<span style='color: var(--term-green)'>> INITIATING_SSH_TRANSFER...</span>";
+
+      let descricao = `**[USER_ID]:** <@${discordIdInput.value}>\n\n**[CARGO_LOG]:**\n`;
+      itemIds.forEach(id => {
+        const v = parseInt(document.getElementById(id).value || 0);
+        if (v > 0) descricao += `> ${id.toUpperCase()}: ${v}\n`;
+      });
+
+      const formData = new FormData();
+      formData.append('payload_json', JSON.stringify({
+        embeds: [{
+          title: '📁 FILE_TRANSFER_SUCCESSFUL',
+          description: descricao + `\n**[TOTAL_CARGO]:** ${total}`,
+          color: 32768,
+          image: { url: 'attachment://farm.png' },
+          timestamp: new Date()
+        }]
+      }));
+      formData.append('file', imagem, 'farm.png');
+
+      try {
+        const res = await fetch(WEBHOOK_URL, { method: 'POST', body: formData });
+        if (!res.ok) throw new Error();
+        status.innerHTML = "<span style='color: var(--term-green)'>> TRANSFER_COMPLETE. SYSTEM_READY.</span>";
+        itemIds.forEach(id => document.getElementById(id).value = '');
+        document.getElementById('imagem').value = '';
+        calcularTotal();
+      } catch {
+        status.innerHTML = "<span style='color: #ff0000'>> CONNECTION_FAILED. RETRY_LATER.</span>";
+      }
+    });
+  </script>
+</body>
+</html>

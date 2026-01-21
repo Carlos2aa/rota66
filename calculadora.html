@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ROTA 66 - Terminal Multi-Protocolo</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
+
+        :root {
+            --primary-color: #00ff41; /* Padrão Parceria (Verde) */
+            --glow-color: rgba(0, 255, 65, 0.2);
+        }
+
+        body {
+            background-color: #050505;
+            color: var(--primary-color);
+            font-family: 'Fira Code', monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            transition: color 0.5s ease;
+        }
+
+        /* Efeito CRT Scanline */
+        body::before {
+            content: " ";
+            display: block;
+            position: fixed;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 10;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .terminal {
+            background-color: rgba(10, 10, 10, 0.95);
+            padding: 30px;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 20px var(--glow-color);
+            width: 100%;
+            max-width: 550px;
+            position: relative;
+            transition: border-color 0.5s ease, box-shadow 0.5s ease;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .mode-btn {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 8px 15px;
+            cursor: pointer;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8em;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: var(--primary-color);
+            color: #000;
+            font-weight: bold;
+        }
+
+        h2 {
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 5px;
+            border-bottom: 2px solid var(--primary-color);
+            padding-bottom: 10px;
+            margin-top: 0;
+            text-shadow: 0 0 10px var(--primary-color);
+            transition: border-color 0.5s ease;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            padding: 8px;
+            border: 1px solid transparent;
+        }
+
+        .item-row:hover {
+            background: var(--glow-color);
+            border: 1px solid var(--primary-color);
+        }
+
+        .item-info { flex: 2; }
+        .item-name { font-weight: bold; font-size: 1em; display: block; }
+        .item-price { font-size: 0.8em; opacity: 0.8; }
+
+        input[type="number"] {
+            width: 60px;
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 5px;
+            text-align: center;
+            font-family: 'Fira Code', monospace;
+            outline: none;
+        }
+
+        .total-section {
+            margin-top: 25px;
+            padding: 15px;
+            border: 2px dashed var(--primary-color);
+            text-align: center;
+            transition: border-color 0.5s ease;
+        }
+
+        .total-value { font-size: 2.8em; font-weight: bold; text-shadow: 0 0 15px var(--primary-color); }
+
+        .btn-copy {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 12px;
+            margin-top: 15px;
+            cursor: pointer;
+            font-family: 'Fira Code', monospace;
+            text-transform: uppercase;
+        }
+
+        .btn-copy:hover {
+            background: var(--primary-color);
+            color: #000;
+        }
+
+        .footer {
+            margin-top: 15px;
+            font-size: 0.7em;
+            text-align: center;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="terminal">
+    <div class="mode-selector">
+        <button class="mode-btn active" id="btnParceria" onclick="changeMode('parceria')">PROTOCOL: PARCERIA</button>
+        <button class="mode-btn" id="btnPista" onclick="changeMode('pista')">PROTOCOL: PISTA</button>
+    </div>
+
+    <h2 id="terminalTitle">PARCERIA_MODE</h2>
+    
+    <div id="calculator"></div>
+
+    <div class="total-section">
+        <span id="totalLabel">> TOTAL_ESTIMADO:</span><br>
+        <span class="total-value" id="grandTotal">R$ 0</span>
+    </div>
+
+    <button class="btn-copy" onclick="copiarVenda()">[ GERAR LOG DE VENDA ]</button>
+
+    <div class="footer">
+        RESPONSÁVEL: CARLOS | ENCRYPTED: YES
+    </div>
+</div>
+
+<audio id="beep" src="https://www.soundjay.com/buttons/beep-24.mp3"></audio>
+<audio id="switchSound" src="https://www.soundjay.com/buttons/button-27.mp3"></audio>
+
+<script>
+    const tabelas = {
+        parceria: [
+            { nome: "Tablet", preco: 15000 },
+            { nome: "Lockpick", preco: 15000 },
+            { nome: "Rastreador", preco: 10000 },
+            { nome: "Remov. Rast.", preco: 10000 },
+            { nome: "Plc. Clonada", preco: 8000 },
+            { nome: "Pé de Cabra", preco: 7000 },
+            { nome: "Ticket", preco: 5000 }
+        ],
+        pista: [
+            { nome: "Tablet", preco: 16000 },
+            { nome: "Lockpick", preco: 16000 },
+            { nome: "Rastreador", preco: 11000 },
+            { nome: "Remov. Rast.", preco: 11000 },
+            { nome: "Plc. Clonada", preco: 9000 },
+            { nome: "Pé de Cabra", preco: 8000 },
+            { nome: "Ticket", preco: 6000 }
+        ]
+    };
+
+    let currentMode = 'parceria';
+    const container = document.getElementById('calculator');
+    const totalDisplay = document.getElementById('grandTotal');
+    const beep = document.getElementById('beep');
+    const switchSound = document.getElementById('switchSound');
+
+    function renderItens() {
+        container.innerHTML = '';
+        tabelas[currentMode].forEach(item => {
+            const row = document.createElement('div');
+            row.className = 'item-row';
+            row.innerHTML = `
+                <div class="item-info">
+                    <span class="item-name">> ${item.nome}</span>
+                    <span class="item-price">VALOR: R$ ${item.preco.toLocaleString('pt-BR')}</span>
+                </div>
+                <div class="item-qty">
+                    <input type="number" min="0" placeholder="0" class="qty-input" data-price="${item.preco}" oninput="calcular()">
+                </div>
+            `;
+            container.appendChild(row);
+        });
+        calcular();
+    }
+
+    function changeMode(mode) {
+        currentMode = mode;
+        switchSound.play();
+        
+        // Atualiza Cores
+        const root = document.documentElement;
+        if (mode === 'pista') {
+            root.style.setProperty('--primary-color', '#ff8c00'); // Laranja Pista
+            root.style.setProperty('--glow-color', 'rgba(255, 140, 0, 0.2)');
+            document.getElementById('terminalTitle').innerText = "PISTA_MODE";
+            document.getElementById('btnPista').classList.add('active');
+            document.getElementById('btnParceria').classList.remove('active');
+        } else {
+            root.style.setProperty('--primary-color', '#00ff41'); // Verde Parceria
+            root.style.setProperty('--glow-color', 'rgba(0, 255, 65, 0.2)');
+            document.getElementById('terminalTitle').innerText = "PARCERIA_MODE";
+            document.getElementById('btnParceria').classList.add('active');
+            document.getElementById('btnPista').classList.remove('active');
+        }
+        
+        renderItens();
+    }
+
+    function calcular() {
+        let total = 0;
+        beep.currentTime = 0;
+        beep.play();
+
+        const inputs = document.querySelectorAll('.qty-input');
+        inputs.forEach(input => {
+            const qtd = parseInt(input.value) || 0;
+            const preco = parseInt(input.dataset.price);
+            total += qtd * preco;
+        });
+        totalDisplay.innerText = `R$ ${total.toLocaleString('pt-BR')}`;
+    }
+
+    function copiarVenda() {
+        let relatorio = `*--- ROTA 66 (${currentMode.toUpperCase()}) ---*\n`;
+        const inputs = document.querySelectorAll('.qty-input');
+        const currentProducts = tabelas[currentMode];
+        
+        inputs.forEach((input, index) => {
+            const qtd = parseInt(input.value) || 0;
+            if(qtd > 0) {
+                relatorio += `${currentProducts[index].nome}: ${qtd}x\n`;
+            }
+        });
+        
+        relatorio += `\n*TOTAL: ${totalDisplay.innerText}*\n`;
+        relatorio += `Responsável: Carlos`;
+
+        navigator.clipboard.writeText(relatorio);
+        alert("LOG COPIADO PARA TRANSFERÊNCIA!");
+    }
+
+    // Inicialização
+    renderItens();
+</script>
+
+</body>
+</html>

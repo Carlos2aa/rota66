@@ -23,13 +23,13 @@
       overflow: hidden;
     }
 
-    /* Efeito de linhas de monitor antigo (CRT) */
+    /* Efeito de linhas CRT */
     body::after {
       content: " ";
       position: fixed;
       top: 0; left: 0; bottom: 0; right: 0;
-      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
-                  linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), 
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
       background-size: 100% 2px, 3px 100%;
       pointer-events: none;
       z-index: 10;
@@ -37,14 +37,20 @@
 
     .terminal-window {
       width: 650px;
-      background: rgba(10, 10, 10, 0.95);
+      background: rgba(10, 10, 10, 0.98);
       border: 1px solid var(--term-green);
-      box-shadow: 0 0 20px var(--term-dim);
-      padding: 20px;
+      box-shadow: 0 0 30px var(--term-dim);
+      padding: 30px;
       position: relative;
+      display: none; /* Escondido até o boot terminar */
     }
 
-    /* Cabeçalho do Terminal */
+    /* Tela de Boot */
+    #boot-screen {
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
     .terminal-header {
       border-bottom: 1px solid var(--term-green);
       margin-bottom: 20px;
@@ -52,17 +58,19 @@
       font-size: 12px;
       display: flex;
       justify-content: space-between;
+      opacity: 0.7;
     }
 
     h1 {
-      font-size: 18px;
-      margin: 10px 0;
+      font-size: 20px;
+      margin: 10px 0 25px 0;
       text-transform: uppercase;
       letter-spacing: 2px;
+      min-height: 24px;
     }
 
-    .prompt-label { color: var(--term-green); margin-bottom: 5px; display: block; }
-    .prompt-label::before { content: "root@rota66:~$ "; opacity: 0.7; }
+    .prompt-label { color: var(--term-green); margin-bottom: 5px; display: block; font-size: 13px; }
+    .prompt-label::before { content: "root@rota66:~$ "; opacity: 0.6; }
 
     .grid {
       display: grid;
@@ -79,31 +87,22 @@
       font-family: 'Fira Code', monospace;
       width: 100%;
       outline: none;
-      padding: 5px 0;
+      padding: 8px 0;
+      font-size: 14px;
     }
 
     input:focus {
       border-bottom: 1px solid var(--term-green);
-      background: rgba(0, 255, 65, 0.05);
-    }
-
-    /* Custom File Input */
-    .file-input-container {
-      border: 1px dashed var(--term-dim);
-      padding: 10px;
-      margin: 10px 0;
-      text-align: center;
-      cursor: pointer;
+      background: rgba(0, 255, 65, 0.03);
     }
 
     #total-display {
       border: 1px solid var(--term-green);
-      padding: 10px;
+      padding: 12px;
       text-align: center;
       margin: 20px 0;
       font-weight: bold;
-      background: var(--term-dim);
-      color: white;
+      background: rgba(0, 59, 0, 0.2);
     }
 
     button {
@@ -117,76 +116,120 @@
       font-size: 16px;
       cursor: pointer;
       text-transform: uppercase;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
     }
 
     button:hover {
-      background: white;
-      box-shadow: 0 0 15px white;
+      background: #fff;
+      box-shadow: 0 0 20px #fff;
     }
 
-    /* Cursor piscante */
     .cursor {
       display: inline-block;
       width: 10px;
-      height: 18px;
+      height: 1.2em;
       background: var(--term-green);
       animation: blink 1s infinite;
       vertical-align: middle;
+      margin-left: 5px;
     }
 
-    @keyframes blink {
-      0%, 49% { opacity: 1; }
-      50%, 100% { opacity: 0; }
-    }
+    @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
 
-    .status-msg {
-      margin-top: 15px;
-      font-size: 14px;
-      height: 20px;
-    }
+    .status-msg { margin-top: 15px; font-size: 13px; min-height: 20px; }
+
+    /* Estilo para input de arquivo */
+    input[type="file"] { border: none; font-size: 12px; margin-top: 5px; }
 
   </style>
 </head>
 <body>
 
-  <div class="terminal-window">
+  <div id="boot-screen"></div>
+
+  <div class="terminal-window" id="main-terminal">
     <div class="terminal-header">
-      <span>SESSION: ROTA66_FARM</span>
-      <span>V1.0.4-STABLE By:Coroa</span>
+      <span>SECURE_CONNECTION: ACTIVE</span>
+      <span>NODE: ROTA66_V1.0.4</span>
     </div>
 
-    <h1>> SYSTEM ACCESS AUTHORIZED <span class="cursor"></span></h1>
+    <h1 id="typewriter-title"></h1>
 
-    <div style="margin-bottom: 20px;">
-      <label class="prompt-label">IDENT_OPERADOR</label>
-      <input type="text" id="discordId" placeholder="ID_DISCORD_">
+    <div>
+      <label class="prompt-label">OPERATOR_ID</label>
+      <input type="text" id="discordId" placeholder="Waiting for ID...">
     </div>
 
-    <label class="prompt-label">QUANTITY_INPUT</label>
-    <div class="grid">
-      <div class="field"><input type="number" id="barra" placeholder="[BARRA_FERRO]" min="0"></div>
-      <div class="field"><input type="number" id="borracha" placeholder="[BORRACHA]" min="0"></div>
-      <div class="field"><input type="number" id="prego" placeholder="[PREGO]" min="0"></div>
-      <div class="field"><input type="number" id="bateria" placeholder="[BATERIA]" min="0"></div>
-      <div class="field"><input type="number" id="circuito" placeholder="[CIRCUITO]" min="0"></div>
-      <div class="field"><input type="number" id="vidro" placeholder="[VIDRO]" min="0"></div>
-      <div class="field"><input type="number" id="aluminio" placeholder="[ALUMINIO]" min="0"></div>
-      <div class="field"><input type="number" id="papel" placeholder="[PAPEL]" min="0"></div>
+    <div style="margin-top: 20px;">
+      <label class="prompt-label">CARGO_COLLECTION_DATA</label>
+      <div class="grid">
+        <input type="number" id="barra" placeholder="[BARRA_FERRO]" min="0">
+        <input type="number" id="borracha" placeholder="[BORRACHA]" min="0">
+        <input type="number" id="prego" placeholder="[PREGO]" min="0">
+        <input type="number" id="bateria" placeholder="[BATERIA]" min="0">
+        <input type="number" id="circuito" placeholder="[CIRCUITO]" min="0">
+        <input type="number" id="vidro" placeholder="[VIDRO]" min="0">
+        <input type="number" id="aluminio" placeholder="[ALUMINIO]" min="0">
+        <input type="number" id="papel" placeholder="[PAPEL]" min="0">
+      </div>
     </div>
 
-    <label class="prompt-label">ATTACH_IMAGE_LOG</label>
+    <label class="prompt-label">ATTACH_IMAGE_EVIDENCE</label>
     <input type="file" id="imagem" accept="image/*">
 
-    <div id="total-display">TOTAL_UNITS: 0</div>
+    <div id="total-display">TOTAL_CARGO_UNITS: 0</div>
 
-    <button id="enviar">./execute_upload.sh</button>
+    <button id="enviar">./send_payload.sh</button>
 
     <div class="status-msg" id="status"></div>
   </div>
 
   <script>
     const WEBHOOK_URL = "https://discord.com/api/webhooks/1462983789843189945/Up4cF2ifyOQzkj1HCERUAXPdGG2BEj5ow5x3zNWjwb9NCbv3bL8y_eKEThlqJgRoDtRm";
+    const bootScreen = document.getElementById('boot-screen');
+    const mainTerminal = document.getElementById('main-terminal');
+    const titleElement = document.getElementById('typewriter-title');
+    
+    // Texto de Boot
+    const bootLines = [
+      "> INITIATING ROTA66 PROTOCOL...",
+      "> LOADING KERNEL MODULES...",
+      "> ESTABLISHING ENCRYPTED TUNNEL...",
+      "> BYPASSING FIREWALL... DONE",
+      "> ACCESS GRANTED TO FARM_DATABASE",
+      "> RUNNING SYSTEM_DECRYPTER..."
+    ];
+
+    // Efeito de Digitação
+    async function typeWriter(text, element, speed = 50) {
+      for (let i = 0; i < text.length; i++) {
+        element.innerHTML = text.slice(0, i + 1) + '<span class="cursor"></span>';
+        await new Promise(r => setTimeout(r, speed));
+      }
+      element.innerHTML = text + '<span class="cursor"></span>';
+    }
+
+    // Sequência de Inicialização
+    async function startSystem() {
+      // 1. Mostrar linhas de boot
+      for (const line of bootLines) {
+        const div = document.createElement('div');
+        bootScreen.appendChild(div);
+        await typeWriter(line, div, 20);
+        await new Promise(r => setTimeout(r, 300));
+      }
+
+      await new Promise(r => setTimeout(r, 500));
+      bootScreen.style.display = 'none';
+      mainTerminal.style.display = 'block';
+
+      // 2. Digitar o título principal
+      await typeWriter("> SYSTEM ACCESS AUTHORIZED", titleElement, 70);
+    }
+
+    window.onload = startSystem;
+
+    // Lógica do Formulário
     const itemIds = ['barra','borracha','prego','bateria','circuito','vidro','aluminio','papel'];
     const discordIdInput = document.getElementById('discordId');
     const totalDisplay = document.getElementById('total-display');
@@ -199,7 +242,7 @@
       itemIds.forEach(id => {
         total += parseInt(document.getElementById(id).value || 0);
       });
-      totalDisplay.textContent = `TOTAL_UNITS: ${total}`;
+      totalDisplay.textContent = `TOTAL_CARGO_UNITS: ${total}`;
       return total;
     }
 
@@ -213,42 +256,41 @@
       const total = calcularTotal();
 
       if (!discordIdInput.value || total === 0 || !imagem) {
-        status.innerHTML = "<span style='color: #ff0000'>> ERROR: DATA_MISSING</span>";
+        status.innerHTML = "<span style='color: #ff3333'>> ERR: PARAMETERS_INVALID</span>";
         return;
       }
 
-      status.innerHTML = "<span style='color: var(--term-green)'>> INITIATING_SSH_TRANSFER...</span>";
-
-      let descricao = `**[USER_ID]:** <@${discordIdInput.value}>\n\n**[CARGO_LOG]:**\n`;
-      itemIds.forEach(id => {
-        const v = parseInt(document.getElementById(id).value || 0);
-        if (v > 0) descricao += `> ${id.toUpperCase()}: ${v}\n`;
-      });
+      status.innerHTML = "> EXECUTING_UPLOAD_PROTOCOL...";
 
       const formData = new FormData();
+      let logItems = "";
+      itemIds.forEach(id => {
+        const v = parseInt(document.getElementById(id).value || 0);
+        if (v > 0) logItems += `> ${id.toUpperCase()}: ${v}\n`;
+      });
+
       formData.append('payload_json', JSON.stringify({
         embeds: [{
-          title: '📁 FILE_TRANSFER_SUCCESSFUL',
-          description: descricao + `\n**[TOTAL_CARGO]:** ${total}`,
+          title: '💾 DATA_PACKET_RECEIVED',
+          description: `**OPERATOR:** <@${discordIdInput.value}>\n\n**MANIFEST:**\n${logItems}\n**TOTAL:** ${total}`,
           color: 32768,
-          image: { url: 'attachment://farm.png' },
+          image: { url: 'attachment://f.png' },
           timestamp: new Date()
         }]
       }));
-      formData.append('file', imagem, 'farm.png');
+      formData.append('file', imagem, 'f.png');
 
       try {
         const res = await fetch(WEBHOOK_URL, { method: 'POST', body: formData });
         if (!res.ok) throw new Error();
-        status.innerHTML = "<span style='color: var(--term-green)'>> TRANSFER_COMPLETE. SYSTEM_READY.</span>";
+        status.innerHTML = "<span style='color: #00ff41'>> SUCCESS: DATA_STREAM_SYNCED.</span>";
         itemIds.forEach(id => document.getElementById(id).value = '');
         document.getElementById('imagem').value = '';
         calcularTotal();
       } catch {
-        status.innerHTML = "<span style='color: #ff0000'>> CONNECTION_FAILED. RETRY_LATER.</span>";
+        status.innerHTML = "<span style='color: #ff3333'>> CRITICAL_ERROR: UPLOAD_FAILED</span>";
       }
     });
   </script>
 </body>
-
 </html>

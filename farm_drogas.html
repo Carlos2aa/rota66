@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>ROTA66_TERMINAL_V1.0.7</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --term-orange: #ff8c00;
+      --term-bg: #0a0500;
+      --term-dim: #442200;
+    }
+
+    body {
+      background-color: var(--term-bg);
+      color: var(--term-orange);
+      font-family: 'Fira Code', monospace;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    body::after {
+      content: " ";
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(255, 140, 0, 0.01), rgba(0, 0, 255, 0.03));
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    #start-overlay {
+      position: fixed;
+      z-index: 200;
+      background: var(--term-bg);
+      width: 100%; height: 100%;
+      display: flex; justify-content: center; align-items: center;
+    }
+
+    .terminal-window {
+      width: 650px;
+      max-height: 90vh;
+      background: rgba(15, 10, 0, 0.95);
+      border: 1px solid var(--term-orange);
+      box-shadow: 0 0 20px var(--term-dim);
+      padding: 20px;
+      position: relative;
+      display: none;
+      overflow-y: auto;
+    }
+
+    .terminal-header {
+      border-bottom: 1px solid var(--term-orange);
+      margin-bottom: 20px;
+      padding-bottom: 5px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    h1 { font-size: 18px; margin: 10px 0; text-transform: uppercase; letter-spacing: 2px; }
+
+    .prompt-label { color: var(--term-orange); margin-bottom: 5px; display: block; font-size: 14px; }
+    .prompt-label::before { content: "> "; opacity: 0.7; }
+
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
+
+    input {
+      background: transparent; border: none; border-bottom: 1px solid var(--term-dim);
+      color: var(--term-orange); font-family: 'Fira Code', monospace;
+      width: 100%; outline: none; padding: 5px 0;
+    }
+
+    input:focus { border-bottom: 1px solid var(--term-orange); background: rgba(255, 140, 0, 0.05); }
+
+    .sale-box {
+      border: 1px dashed var(--term-orange);
+      padding: 10px;
+      margin-top: 10px;
+      background: rgba(255, 140, 0, 0.02);
+    }
+
+    #total-display {
+      border: 1px solid var(--term-orange); padding: 10px; text-align: center;
+      margin: 15px 0; font-weight: bold; background: var(--term-dim); color: white;
+    }
+
+    button {
+      background: var(--term-orange); color: var(--term-bg); border: none;
+      width: 100%; padding: 15px; font-family: 'Fira Code', monospace;
+      font-weight: bold; font-size: 16px; cursor: pointer; text-transform: uppercase;
+    }
+
+    button:hover { background: #ffa500; box-shadow: 0 0 15px #ffa500; color: #000; }
+
+    .cursor {
+      display: inline-block; width: 10px; height: 18px; background: var(--term-orange);
+      animation: blink 1s infinite; vertical-align: middle;
+    }
+
+    @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+    .status-msg { margin-top: 15px; font-size: 14px; height: 20px; }
+  </style>
+</head>
+<body>
+
+  <div id="start-overlay">
+    <button onclick="startSystem()" style="width: auto; padding: 20px 40px;">[ INICIAR_SISTEMA_ROTA66 ]</button>
+  </div>
+
+  <div id="boot-screen" style="width: 650px;"></div>
+
+  <div class="terminal-window" id="main-terminal">
+    <div class="terminal-header">
+      <span>SESSION: ROTA66_CARGO</span>
+      <span>V1.0.7-AMBER</span>
+    </div>
+
+    <h1 id="typewriter-title"></h1>
+
+    <div style="margin-bottom: 15px;">
+      <label class="prompt-label">IDENT_OPERADOR</label>
+      <input type="text" id="discordId" placeholder="ID_DISCORD_">
+    </div>
+
+    <label class="prompt-label">PRODUCT_QUANTITY_INPUT</label>
+    <div class="grid">
+      <div class="field"><input type="number" id="metafetamina" placeholder="[METAFETAMINA]" min="0"></div>
+      <div class="field"><input type="number" id="maconha" placeholder="[MACONHA]" min="0"></div>
+      <div class="field"><input type="number" id="cocaina" placeholder="[COCAINA]" min="0"></div>
+      <div class="field"><input type="number" id="lsd" placeholder="[LSD]" min="0"></div>
+      <div class="field"><input type="number" id="lolo" placeholder="[LOLO]" min="0"></div>
+    </div>
+
+    <div class="sale-box">
+      <label class="prompt-label">TOTAL_SALE_VALUE (R$)</label>
+      <input type="number" id="valorVenda" placeholder="VALOR_VENDIDO_$" min="0">
+    </div>
+
+    <div style="margin-top: 15px;">
+        <label class="prompt-label">ATTACH_IMAGE_LOG</label>
+        <input type="file" id="imagem" accept="image/*">
+    </div>
+
+    <div id="total-display">TOTAL_UNITS: 0</div>
+
+    <button id="enviar">./execute_upload.sh</button>
+
+    <div class="status-msg" id="status"></div>
+  </div>
+
+  <script>
+    const typeSound = new Audio('https://www.soundjay.com/communication/typewriter-key-1.mp3');
+    const beepSound = new Audio('https://www.soundjay.com/button/beep-07.mp3');
+    const successSound = new Audio('https://www.soundjay.com/button/beep-01a.mp3');
+
+    async function typeWriter(text, element, speed = 40) {
+      for (let i = 0; i < text.length; i++) {
+        element.innerHTML = text.slice(0, i + 1) + '<span class="cursor"></span>';
+        let s = typeSound.cloneNode(); s.volume = 0.1; s.play();
+        await new Promise(r => setTimeout(r, speed));
+      }
+      element.innerHTML = text + '<span class="cursor"></span>';
+    }
+
+    async function startSystem() {
+      document.getElementById('start-overlay').style.display = 'none';
+      beepSound.play();
+      const bootScreen = document.getElementById('boot-screen');
+      const lines = ["> INITIATING...", "> LOADING_FINANCIAL_MODULES...", "> ACCESS_GRANTED."];
+      for (const line of lines) {
+        const d = document.createElement('div'); bootScreen.appendChild(d);
+        await typeWriter(line, d, 25);
+        await new Promise(r => setTimeout(r, 300));
+      }
+      bootScreen.style.display = 'none';
+      document.getElementById('main-terminal').style.display = 'block';
+      await typeWriter("> SYSTEM ACCESS AUTHORIZED", document.getElementById('typewriter-title'), 60);
+      successSound.play();
+    }
+
+    const WEBHOOK_URL = "https://discord.com/api/webhooks/1463715601305567429/axlkIGXgDVqY761h3wc-DIz9CPCv81FA8gtaJ7jEHj1JI_0hc6BdFZSfoAgDDcxhFvmL";
+    const itemIds = ['metafetamina', 'maconha', 'cocaina', 'lsd', 'lolo'];
+    const discordIdInput = document.getElementById('discordId');
+    const valorVendaInput = document.getElementById('valorVenda');
+    const totalDisplay = document.getElementById('total-display');
+
+    discordIdInput.value = localStorage.getItem('farm_discord_id') || '';
+    discordIdInput.addEventListener('input', () => localStorage.setItem('farm_discord_id', discordIdInput.value));
+
+    function calcularTotal() {
+      let total = 0;
+      itemIds.forEach(id => {
+        total += parseInt(document.getElementById(id).value || 0);
+      });
+      totalDisplay.textContent = `TOTAL_UNITS: ${total}`;
+      return total;
+    }
+
+    itemIds.forEach(id => {
+      document.getElementById(id).addEventListener('input', calcularTotal);
+    });
+
+    document.getElementById('enviar').addEventListener('click', async () => {
+      const status = document.getElementById('status');
+      const imagem = document.getElementById('imagem').files[0];
+      const total = calcularTotal();
+      const valorVenda = valorVendaInput.value || 0;
+
+      if (!discordIdInput.value || total === 0 || !imagem || !valorVenda) {
+        status.innerHTML = "<span style='color: #ff4400'>> ERROR: DATA_OR_VALUE_MISSING</span>";
+        return;
+      }
+
+      status.innerHTML = "<span style='color: var(--term-orange)'>> INITIATING_SSH_TRANSFER...</span>";
+
+      let descricao = `**[USER_ID]:** <@${discordIdInput.value}>\n\n**[CARGO_LOG]:**\n`;
+      itemIds.forEach(id => {
+        const v = parseInt(document.getElementById(id).value || 0);
+        if (v > 0) descricao += `> ${id.toUpperCase()}: ${v}\n`;
+      });
+      
+      descricao += `\n**[VALOR_VENDIDO]:** R$ ${valorVenda}`;
+
+      const formData = new FormData();
+      formData.append('payload_json', JSON.stringify({
+        embeds: [{
+          title: '💰 SALES_LOG_SUCCESSFUL',
+          description: descricao + `\n**[TOTAL_UNITS]:** ${total}`,
+          color: 16746496,
+          image: { url: 'attachment://cargo.png' },
+          timestamp: new Date()
+        }]
+      }));
+      formData.append('file', imagem, 'cargo.png');
+
+      try {
+        const res = await fetch(WEBHOOK_URL, { method: 'POST', body: formData });
+        if (!res.ok) throw new Error();
+        successSound.play();
+        status.innerHTML = "<span style='color: var(--term-orange)'>> DATA_UPLOADED. SYSTEM_CLEAN.</span>";
+        
+        // Reset campos
+        itemIds.forEach(id => document.getElementById(id).value = '');
+        valorVendaInput.value = '';
+        document.getElementById('imagem').value = '';
+        calcularTotal();
+      } catch {
+        status.innerHTML = "<span style='color: #ff4400'>> CONNECTION_FAILED. RETRY_LATER.</span>";
+      }
+    });
+  </script>
+</body>
+</html>

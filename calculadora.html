@@ -8,8 +8,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap');
 
         :root {
-            --primary-color: #00ff41; /* Padrão Parceria (Verde) */
+            --primary-color: #00ff41; 
             --glow-color: rgba(0, 255, 65, 0.2);
+            --text-white: #ffffff;
         }
 
         body {
@@ -21,39 +22,79 @@
             align-items: center;
             min-height: 100vh;
             margin: 0;
-            overflow-x: hidden;
-            transition: color 0.5s ease;
+            overflow: hidden;
         }
 
-        /* Efeito CRT Scanline */
+        /* --- ANIMAÇÃO DE PISCAR DESCOMPASSADO --- */
+        .hacker-title {
+            font-size: 1.6em;
+            font-weight: 700;
+            text-align: center;
+            color: var(--primary-color);
+            display: block;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px var(--glow-color);
+            animation: flicker-unstable 3s infinite;
+        }
+
+        @keyframes flicker-unstable {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; text-shadow: 0 0 10px var(--primary-color); }
+            20%, 24%, 55% { opacity: 0.2; text-shadow: none; }
+            80% { opacity: 0.8; }
+            81% { opacity: 1; }
+            82% { opacity: 0.1; }
+            83% { opacity: 1; }
+        }
+        /* --------------------------------------- */
+
         body::before {
             content: " ";
             display: block;
             position: fixed;
             top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
-            z-index: 10;
+            z-index: 1000;
             background-size: 100% 2px, 3px 100%;
             pointer-events: none;
         }
 
-        .terminal {
-            background-color: rgba(10, 10, 10, 0.95);
-            padding: 30px;
-            border: 2px solid var(--primary-color);
-            box-shadow: 0 0 20px var(--glow-color);
-            width: 100%;
-            max-width: 550px;
-            position: relative;
-            transition: border-color 0.5s ease, box-shadow 0.5s ease;
+        #login-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: #000;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding-left: 10%;
+            box-sizing: border-box;
         }
 
-        .mode-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-            justify-content: center;
+        .login-text {
+            font-size: 1em;
+            margin-bottom: 2px;
+            opacity: 0;
+            transform: translateX(-10px);
+            animation: fadeIn 0.1s forwards;
         }
+
+        @keyframes fadeIn { to { opacity: 1; transform: translateX(0); } }
+
+        .terminal {
+            background-color: rgba(10, 10, 10, 0.98);
+            padding: 25px;
+            border: 2px solid var(--primary-color);
+            box-shadow: 0 0 20px var(--glow-color);
+            width: 95%;
+            max-width: 700px;
+            display: none;
+            position: relative;
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .mode-selector { display: flex; gap: 10px; margin-bottom: 20px; justify-content: center; }
 
         .mode-btn {
             background: transparent;
@@ -61,160 +102,153 @@
             color: var(--primary-color);
             padding: 8px 15px;
             cursor: pointer;
-            font-family: 'Fira Code', monospace;
+            font-family: 'Fira Code';
             font-size: 0.8em;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            font-weight: bold;
         }
 
         .mode-btn.active {
             background: var(--primary-color);
             color: #000;
-            font-weight: bold;
         }
 
-        h2 {
-            text-align: center;
-            text-transform: uppercase;
-            letter-spacing: 5px;
-            border-bottom: 2px solid var(--primary-color);
-            padding-bottom: 10px;
-            margin-top: 0;
-            text-shadow: 0 0 10px var(--primary-color);
-            transition: border-color 0.5s ease;
+        .vendedor-section { margin-bottom: 20px; border-left: 3px solid var(--primary-color); padding-left: 15px; }
+
+        #discordId {
+            width: 100%; background: transparent; border: none; 
+            border-bottom: 1px solid var(--primary-color);
+            color: var(--text-white);
+            font-family: 'Fira Code'; outline: none; font-size: 1.1em;
         }
+
+        #calculator { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
         .item-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            padding: 8px;
-            border: 1px solid transparent;
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 8px; border: 1px solid var(--primary-color); background: rgba(255, 255, 255, 0.02);
         }
 
-        .item-row:hover {
-            background: var(--glow-color);
-            border: 1px solid var(--primary-color);
-        }
-
-        .item-info { flex: 2; }
-        .item-name { font-weight: bold; font-size: 1em; display: block; }
-        .item-price { font-size: 0.8em; opacity: 0.8; }
+        .item-name { font-weight: bold; font-size: 0.85em; }
+        .item-price { font-size: 0.7em; color: var(--text-white) !important; opacity: 0.9; display: block; }
 
         input[type="number"] {
-            width: 60px;
-            background: transparent;
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 5px;
-            text-align: center;
-            font-family: 'Fira Code', monospace;
-            outline: none;
+            width: 45px; background: #000; border: 1px solid var(--primary-color);
+            color: var(--text-white); padding: 5px; text-align: center; font-family: 'Fira Code';
         }
 
-        .total-section {
-            margin-top: 25px;
-            padding: 15px;
-            border: 2px dashed var(--primary-color);
-            text-align: center;
-            transition: border-color 0.5s ease;
-        }
+        .total-section { margin-top: 20px; padding: 10px; border: 2px dashed var(--primary-color); text-align: center; }
+        .total-value { font-size: 2.2em; font-weight: bold; color: var(--text-white); }
 
-        .total-value { font-size: 2.8em; font-weight: bold; text-shadow: 0 0 15px var(--primary-color); }
-
-        .btn-copy {
-            width: 100%;
-            background: transparent;
-            border: 1px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 12px;
-            margin-top: 15px;
-            cursor: pointer;
-            font-family: 'Fira Code', monospace;
-            text-transform: uppercase;
+        .actions { display: flex; gap: 10px; margin-top: 15px; }
+        .btn {
+            flex: 1; background: transparent; border: 1px solid var(--primary-color);
+            color: var(--primary-color); padding: 12px; cursor: pointer; font-family: 'Fira Code'; text-transform: uppercase;
         }
+        .btn:hover { background: var(--primary-color); color: #000; }
+        .btn-clear { border-color: #ff4141 !important; color: #ff4141 !important; }
+        .btn-clear:hover { background: #ff4141 !important; color: #000 !important; }
 
-        .btn-copy:hover {
-            background: var(--primary-color);
-            color: #000;
-        }
+        .footer { margin-top: 15px; font-size: 0.65em; text-align: center; opacity: 0.7; }
+        .highlight-white { color: var(--text-white); font-weight: bold; }
 
-        .footer {
-            margin-top: 15px;
-            font-size: 0.7em;
-            text-align: center;
-            opacity: 0.6;
-        }
+        @media (max-width: 600px) { #calculator { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<div class="terminal">
+<div id="login-overlay">
+    <div class="login-text" style="animation-delay: 0.1s;">> [SYS] ROTA 66 SYSTEM...</div>
+    <div class="login-text" style="animation-delay: 0.3s;">> [OK] INTERFACE_LOADED.</div>
+</div>
+
+<div class="terminal" id="main-terminal">
     <div class="mode-selector">
         <button class="mode-btn active" id="btnParceria" onclick="changeMode('parceria')">PROTOCOL: PARCERIA</button>
         <button class="mode-btn" id="btnPista" onclick="changeMode('pista')">PROTOCOL: PISTA</button>
     </div>
 
-    <h2 id="terminalTitle">PARCERIA_MODE</h2>
+    <div class="hacker-title">ROTA 66 - TERMINAL DE VENDAS</div>
+
+    <div class="vendedor-section">
+        <label style="font-size: 0.7em;">> AUTH_DISCORD_ID (RESPONSÁVEL):</label>
+        <input type="text" id="discordId" placeholder="ID do Discord" oninput="saveAndRefresh()">
+    </div>
     
     <div id="calculator"></div>
 
     <div class="total-section">
-        <span id="totalLabel">> TOTAL_ESTIMADO:</span><br>
+        <span>> TOTAL_ESTIMADO:</span><br>
         <span class="total-value" id="grandTotal">R$ 0</span>
     </div>
 
-    <button class="btn-copy" onclick="copiarVenda()">[ GERAR LOG DE VENDA ]</button>
+    <div class="actions">
+        <button class="btn btn-clear" onclick="limparFormulario()">[ RESET ]</button>
+        <button class="btn" id="btnSend" onclick="enviarLog()">[ ENVIAR LOG ]</button>
+    </div>
 
-    <div class="footer">
-        RESPONSÁVEL: CARLOS | ENCRYPTED: YES
+    <div class="footer" id="footerText">
+        RESPONSÁVEL: <span class="highlight-white" id="footerId">CARLOS</span> | ENCRYPTED: <span class="highlight-white">YES</span>
     </div>
 </div>
 
-<audio id="beep" src="https://www.soundjay.com/buttons/beep-24.mp3"></audio>
 <audio id="switchSound" src="https://www.soundjay.com/buttons/button-27.mp3"></audio>
 
 <script>
+    const WEBHOOK_URL = 'https://discord.com/api/webhooks/1464030434253078741/OpQ6Fg_KyfDkzihUqlcFoPVppcGRiKA7RKMWXm2c8oDarBBi6zDVndsBfZncLwuwR5rG';
+
     const tabelas = {
         parceria: [
-            { nome: "Tablet", preco: 15000 },
-            { nome: "Lockpick", preco: 15000 },
-            { nome: "Rastreador", preco: 10000 },
-            { nome: "Remov. Rast.", preco: 10000 },
-            { nome: "Plc. Clonada", preco: 8000 },
-            { nome: "Pé de Cabra", preco: 7000 },
+            { nome: "Tablet", preco: 15000 }, { nome: "Lockpick", preco: 15000 },
+            { nome: "Rastreador", preco: 10000 }, { nome: "Remov. Rast.", preco: 10000 },
+            { nome: "Plc. Clonada", preco: 8000 }, { nome: "Pé de Cabra", preco: 7000 },
             { nome: "Ticket", preco: 5000 }
         ],
         pista: [
-            { nome: "Tablet", preco: 16000 },
-            { nome: "Lockpick", preco: 16000 },
-            { nome: "Rastreador", preco: 11000 },
-            { nome: "Remov. Rast.", preco: 11000 },
-            { nome: "Plc. Clonada", preco: 9000 },
-            { nome: "Pé de Cabra", preco: 8000 },
+            { nome: "Tablet", preco: 16000 }, { nome: "Lockpick", preco: 16000 },
+            { nome: "Rastreador", preco: 11000 }, { nome: "Remov. Rast.", preco: 11000 },
+            { nome: "Plc. Clonada", preco: 9000 }, { nome: "Pé de Cabra", preco: 8000 },
             { nome: "Ticket", preco: 6000 }
         ]
     };
 
     let currentMode = 'parceria';
-    const container = document.getElementById('calculator');
-    const totalDisplay = document.getElementById('grandTotal');
-    const beep = document.getElementById('beep');
-    const switchSound = document.getElementById('switchSound');
+
+    window.onload = () => {
+        setTimeout(() => {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('main-terminal').style.display = 'block';
+            const savedId = localStorage.getItem('vendedorDiscord');
+            if (savedId) {
+                document.getElementById('discordId').value = savedId;
+                atualizarResponsavel(savedId);
+            }
+            renderItens();
+        }, 800);
+    };
+
+    function saveAndRefresh() {
+        const id = document.getElementById('discordId').value;
+        localStorage.setItem('vendedorDiscord', id);
+        atualizarResponsavel(id);
+    }
+
+    function atualizarResponsavel(id) {
+        document.getElementById('footerId').innerText = (id || "CARLOS").toUpperCase();
+    }
 
     function renderItens() {
+        const container = document.getElementById('calculator');
         container.innerHTML = '';
         tabelas[currentMode].forEach(item => {
             const row = document.createElement('div');
             row.className = 'item-row';
             row.innerHTML = `
                 <div class="item-info">
-                    <span class="item-name">> ${item.nome}</span>
-                    <span class="item-price">VALOR: R$ ${item.preco.toLocaleString('pt-BR')}</span>
+                    <span class="item-name">${item.nome}</span>
+                    <span class="item-price">R$ ${item.preco.toLocaleString('pt-BR')}</span>
                 </div>
-                <div class="item-qty">
-                    <input type="number" min="0" placeholder="0" class="qty-input" data-price="${item.preco}" oninput="calcular()">
-                </div>
+                <input type="number" min="0" placeholder="0" value="" class="qty-input" data-price="${item.preco}" oninput="calcular()">
             `;
             container.appendChild(row);
         });
@@ -223,62 +257,70 @@
 
     function changeMode(mode) {
         currentMode = mode;
-        switchSound.play();
-        
-        // Atualiza Cores
+        document.getElementById('switchSound').play();
         const root = document.documentElement;
-        if (mode === 'pista') {
-            root.style.setProperty('--primary-color', '#ff8c00'); // Laranja Pista
-            root.style.setProperty('--glow-color', 'rgba(255, 140, 0, 0.2)');
-            document.getElementById('terminalTitle').innerText = "PISTA_MODE";
-            document.getElementById('btnPista').classList.add('active');
-            document.getElementById('btnParceria').classList.remove('active');
-        } else {
-            root.style.setProperty('--primary-color', '#00ff41'); // Verde Parceria
-            root.style.setProperty('--glow-color', 'rgba(0, 255, 65, 0.2)');
-            document.getElementById('terminalTitle').innerText = "PARCERIA_MODE";
-            document.getElementById('btnParceria').classList.add('active');
-            document.getElementById('btnPista').classList.remove('active');
-        }
-        
+        const color = mode === 'pista' ? '#ff8c00' : '#00ff41';
+        const glow = mode === 'pista' ? 'rgba(255, 140, 0, 0.2)' : 'rgba(0, 255, 65, 0.2)';
+        root.style.setProperty('--primary-color', color);
+        root.style.setProperty('--glow-color', glow);
+        document.getElementById('btnParceria').classList.toggle('active', mode === 'parceria');
+        document.getElementById('btnPista').classList.toggle('active', mode === 'pista');
         renderItens();
     }
 
     function calcular() {
         let total = 0;
-        beep.currentTime = 0;
-        beep.play();
-
-        const inputs = document.querySelectorAll('.qty-input');
-        inputs.forEach(input => {
-            const qtd = parseInt(input.value) || 0;
-            const preco = parseInt(input.dataset.price);
-            total += qtd * preco;
+        document.querySelectorAll('.qty-input').forEach(input => {
+            total += (parseInt(input.value) || 0) * parseInt(input.dataset.price);
         });
-        totalDisplay.innerText = `R$ ${total.toLocaleString('pt-BR')}`;
+        document.getElementById('grandTotal').innerText = `R$ ${total.toLocaleString('pt-BR')}`;
     }
 
-    function copiarVenda() {
-        let relatorio = `*--- ROTA 66 (${currentMode.toUpperCase()}) ---*\n`;
-        const inputs = document.querySelectorAll('.qty-input');
-        const currentProducts = tabelas[currentMode];
-        
-        inputs.forEach((input, index) => {
-            const qtd = parseInt(input.value) || 0;
-            if(qtd > 0) {
-                relatorio += `${currentProducts[index].nome}: ${qtd}x\n`;
-            }
-        });
-        
-        relatorio += `\n*TOTAL: ${totalDisplay.innerText}*\n`;
-        relatorio += `Responsável: Carlos`;
-
-        navigator.clipboard.writeText(relatorio);
-        alert("LOG COPIADO PARA TRANSFERÊNCIA!");
+    function limparFormulario() {
+        document.querySelectorAll('.qty-input').forEach(input => input.value = '');
+        calcular();
     }
 
-    // Inicialização
-    renderItens();
+    async function enviarLog() {
+        const btn = document.getElementById('btnSend');
+        const id = document.getElementById('discordId').value || "CARLOS";
+        const total = document.getElementById('grandTotal').innerText;
+        let itensTxt = "";
+        document.querySelectorAll('.qty-input').forEach((input, i) => {
+            const qtd = parseInt(input.value) || 0;
+            if(qtd > 0) itensTxt += `> ${tabelas[currentMode][i].nome}: ${qtd}x\n`;
+        });
+        if (!itensTxt) return alert("Adicione itens!");
+
+        const payload = {
+            embeds: [{
+                title: `LOG DE VENDA - ROTA 66 (${currentMode.toUpperCase()})`,
+                color: currentMode === 'parceria' ? 65345 : 16747520,
+                fields: [
+                    { name: "Vendedor", value: `<@${id}>`, inline: true },
+                    { name: "Itens Vendidos", value: itensTxt },
+                    { name: "Total Estimado", value: `**${total}**` }
+                ],
+                footer: { text: `Responsável: ${id} | ROTA 66` },
+                timestamp: new Date()
+            }]
+        };
+
+        btn.innerText = "[ ENVIANDO... ]";
+        btn.disabled = true;
+        try {
+            await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            btn.innerText = "[ SUCESSO! ]";
+            setTimeout(() => { btn.innerText = "[ ENVIAR LOG ]"; btn.disabled = false; }, 2000);
+        } catch (e) {
+            btn.innerText = "[ ERRO ]";
+            btn.disabled = false;
+        }
+    }
 </script>
 
 </body>

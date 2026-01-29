@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <title>ROTA66_TERMINAL_V1.0.4</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --term-green: #00ff41;
+      --term-bg: #050505;
+      --term-dim: #003b00;
+      --term-alert: #ffff00;
+    }
+
+    body {
+      background-color: var(--term-bg);
+      color: var(--term-green);
+      font-family: 'Fira Code', monospace;
+      margin: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Efeito CRT */
+    body::after {
+      content: " ";
+      position: fixed;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), 
+                  linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+      background-size: 100% 2px, 3px 100%;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    #start-overlay, #end-tutorial-overlay {
+      position: fixed;
+      z-index: 200;
+      background: rgba(5, 5, 5, 0.98);
+      width: 100%; height: 100%;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      gap: 20px;
+    }
+
+    #end-tutorial-overlay { display: none; border: 2px solid var(--term-alert); }
+
+    .terminal-window {
+      width: 680px;
+      background: rgba(10, 10, 10, 0.95);
+      border: 1px solid var(--term-green);
+      box-shadow: 0 0 20px var(--term-dim);
+      padding: 25px;
+      position: relative;
+      display: none;
+    }
+
+    .terminal-header {
+      border-bottom: 1px solid var(--term-green);
+      margin-bottom: 20px;
+      padding-bottom: 5px;
+      font-size: 12px;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    h1 { font-size: 18px; margin: 10px 0; text-transform: uppercase; letter-spacing: 2px; }
+
+    .prompt-label { color: var(--term-green); margin-bottom: 15px; display: block; font-weight: bold; }
+    .prompt-label::before { content: "> "; }
+
+    /* Grid Layout: Rótulo e Input lado a lado */
+    .grid { 
+      display: grid; 
+      grid-template-columns: 1fr 1fr; 
+      gap: 10px 30px; 
+      margin-bottom: 20px; 
+    }
+
+    .item-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--term-dim);
+      padding-bottom: 2px;
+    }
+
+    .item-name {
+      font-size: 13px;
+      color: var(--term-green);
+      white-space: nowrap;
+    }
+
+    input {
+      background: transparent; 
+      border: none;
+      color: var(--term-alert) !important;
+      font-family: 'Fira Code', monospace;
+      width: 80px;
+      text-align: right;
+      outline: none;
+      font-size: 14px;
+    }
+
+    /* Input do Discord (Diferente da grid) */
+    #discordId {
+      width: 100%;
+      text-align: left;
+      border-bottom: 1px solid var(--term-dim);
+      margin-bottom: 20px;
+    }
+
+    #total-display {
+      border: 1px solid var(--term-green); padding: 10px; text-align: center;
+      margin: 20px 0; font-weight: bold; background: var(--term-dim); color: white;
+    }
+
+    button {
+      background: var(--term-green); color: var(--term-bg); border: none;
+      width: 100%; padding: 15px; font-family: 'Fira Code', monospace;
+      font-weight: bold; font-size: 16px; cursor: pointer; text-transform: uppercase;
+      transition: 0.3s;
+    }
+
+    button:hover { background: white; box-shadow: 0 0 15px white; }
+
+    .btn-tutorial {
+      width: auto; padding: 5px 12px; font-size: 10px; background: transparent; 
+      color: var(--term-alert); border: 1px solid var(--term-alert);
+    }
+
+    .status-msg { margin-top: 15px; font-size: 13px; height: 20px; font-weight: bold; }
+
+    .cursor {
+      display: inline-block; width: 8px; height: 15px; background: var(--term-green);
+      animation: blink 1s infinite; margin-left: 5px;
+    }
+    @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+  </style>
+</head>
+<body>
+
+  <div id="start-overlay">
+    <button onclick="startSystem()" style="width: auto; padding: 20px 40px;">[ INICIAR_SISTEMA_ROTA66 ]</button>
+  </div>
+
+  <div id="end-tutorial-overlay">
+    <h2 style="color: var(--term-alert);">TUTORIAL_COMPLETO</h2>
+    <button onclick="voltarAoSistema()" style="width: 300px;">[ VOLTAR_AO_SISTEMA ]</button>
+    <button onclick="repetirTutorial()" style="width: 300px; background: transparent; color: var(--term-green); border: 1px solid var(--term-green);">[ REPETIR ]</button>
+  </div>
+
+  <div id="boot-screen" style="width: 650px; padding: 20px;"></div>
+
+  <div class="terminal-window" id="main-terminal">
+    <div class="terminal-header">
+      <span>SESSION: ROTA66_FARM</span>
+      <span>V1.0.4-STABLE</span>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h1 id="typewriter-title"></h1>
+      <button onclick="runTutorial()" class="btn-tutorial">[ RUN_TUTORIAL.EXE ]</button>
+    </div>
+
+    <label class="prompt-label">ID_DISCORD</label>
+    <input type="text" id="discordId" placeholder="DIGITE SEU ID...">
+
+    <label class="prompt-label">MATERIAIS_COLETADOS</label>
+    <div class="grid">
+      <div class="item-row"><span class="item-name">BARRA_FERRO:</span><input type="number" id="barra" value="0"></div>
+      <div class="item-row"><span class="item-name">BORRACHA:</span><input type="number" id="borracha" value="0"></div>
+      <div class="item-row"><span class="item-name">PREGO:</span><input type="number" id="prego" value="0"></div>
+      <div class="item-row"><span class="item-name">BATERIA:</span><input type="number" id="bateria" value="0"></div>
+      <div class="item-row"><span class="item-name">CIRCUITO:</span><input type="number" id="circuito" value="0"></div>
+      <div class="item-row"><span class="item-name">VIDRO:</span><input type="number" id="vidro" value="0"></div>
+      <div class="item-row"><span class="item-name">ALUMINIO:</span><input type="number" id="aluminio" value="0"></div>
+      <div class="item-row"><span class="item-name">PAPEL:</span><input type="number" id="papel" value="0"></div>
+    </div>
+
+    <label class="prompt-label">COMPROVANTE_VISUAL</label>
+    <input type="file" id="imagem" accept="image/*" style="width: 100%; text-align: left; color: var(--term-green);">
+
+    <div id="total-display">TOTAL_UNIDADES: 0</div>
+    <button id="enviar">./transmitir_dados.sh</button>
+    <div class="status-msg" id="status"></div>
+  </div>
+
+  <script>
+    const typeSound = new Audio('https://www.soundjay.com/communication/typewriter-key-1.mp3');
+    const beepSound = new Audio('https://www.soundjay.com/button/beep-07.mp3');
+    const successSound = new Audio('https://www.soundjay.com/button/beep-01a.mp3');
+
+    function falar(texto) {
+      return new Promise((resolve) => {
+        window.speechSynthesis.cancel();
+        const msg = new SpeechSynthesisUtterance(texto);
+        msg.lang = 'pt-BR';
+        msg.rate = 1.0;
+        msg.onend = () => resolve();
+        window.speechSynthesis.speak(msg);
+      });
+    }
+
+    async function typeWriter(text, element, speed = 40) {
+      for (let i = 0; i < text.length; i++) {
+        element.innerHTML = text.slice(0, i + 1) + '<span class="cursor"></span>';
+        let s = typeSound.cloneNode(); s.volume = 0.1; s.play();
+        await new Promise(r => setTimeout(r, speed));
+      }
+      element.innerHTML = text + '<span class="cursor"></span>';
+    }
+
+    async function startSystem() {
+      document.getElementById('start-overlay').style.display = 'none';
+      beepSound.play();
+      const bootScreen = document.getElementById('boot-screen');
+      bootScreen.innerHTML = "";
+      bootScreen.style.display = 'block';
+      const lines = ["> INITIATING...", "> LOADING_MODULES...", "> ACCESS_GRANTED."];
+      for (const line of lines) {
+        const d = document.createElement('div'); bootScreen.appendChild(d);
+        await typeWriter(line, d, 25);
+        await new Promise(r => setTimeout(r, 300));
+      }
+      bootScreen.style.display = 'none';
+      document.getElementById('main-terminal').style.display = 'block';
+      await typeWriter("SISTEMA ROTA66 ATIVO", document.getElementById('typewriter-title'), 60);
+      successSound.play();
+    }
+
+    const itemIds = ['barra','borracha','prego','bateria','circuito','vidro','aluminio','papel'];
+    const discordIdInput = document.getElementById('discordId');
+
+    function calcularTotal() {
+      let total = 0;
+      itemIds.forEach(id => {
+        total += parseInt(document.getElementById(id).value || 0);
+      });
+      document.getElementById('total-display').textContent = `TOTAL_UNIDADES: ${total}`;
+      return total;
+    }
+
+    itemIds.forEach(id => document.getElementById(id).addEventListener('input', calcularTotal));
+
+    async function runTutorial() {
+      const status = document.getElementById('status');
+      const btnEnviar = document.getElementById('enviar');
+      const inputImg = document.getElementById('imagem');
+
+      status.innerHTML = "<span style='color: var(--term-alert)'>> MODO_INSTRUTOR: ATIVO</span>";
+      
+      await falar("Iniciando tutorial. Primeiro, digite o seu ID do Discord conforme o exemplo em amarelo.");
+      discordIdInput.focus();
+      discordIdInput.value = "";
+      const targetId = "397781424595271690";
+      for (let char of targetId) {
+        discordIdInput.value += char;
+        typeSound.cloneNode().play();
+        await new Promise(r => setTimeout(r, 70));
+      }
+      successSound.play();
+      await new Promise(r => setTimeout(r, 800));
+
+      await falar("Agora, insira as quantidades de cada item ao lado dos nomes correspondentes.");
+      const demoItems = [{id:'borracha', v:50}, {id:'bateria', v:10}];
+      for (let item of demoItems) {
+        const el = document.getElementById(item.id);
+        el.focus();
+        el.value = item.v;
+        typeSound.cloneNode().play();
+        calcularTotal();
+        await new Promise(r => setTimeout(r, 800));
+      }
+
+      status.innerHTML = "<span style='color: var(--term-alert)'>> AÇÃO: ANEXAR IMAGEM</span>";
+      inputImg.style.boxShadow = "0 0 15px var(--term-alert)";
+      await falar("Atenção! Este campo é obrigatório. Clique aqui para anexar a prova visual da sua coleta.");
+      await new Promise(r => setTimeout(r, 2000));
+      inputImg.style.boxShadow = "none";
+
+      btnEnviar.style.boxShadow = "0 0 25px var(--term-green)";
+      await falar("Com tudo pronto, clique no botão de transmissão para enviar o relatório. Fim da instrução.");
+      
+      status.innerHTML = "<span style='color: var(--term-green)'>> TUTORIAL FINALIZADO.</span>";
+      successSound.play();
+
+      await new Promise(r => setTimeout(r, 2000));
+      document.getElementById('end-tutorial-overlay').style.display = 'flex';
+    }
+
+    function voltarAoSistema() {
+      itemIds.forEach(id => document.getElementById(id).value = 0);
+      document.getElementById('imagem').value = '';
+      discordIdInput.value = '';
+      calcularTotal();
+      document.getElementById('end-tutorial-overlay').style.display = 'none';
+      document.getElementById('status').innerHTML = "> AGUARDANDO_OPERADOR.";
+    }
+
+    function repetirTutorial() {
+      voltarAoSistema();
+      runTutorial();
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>SISTEMA DE BOLÃO INDUSTRIAL - SHOWTIME</title>
+    <link href="https://fonts.googleapis.com/css2?family=Black+Ops+One&display=swap" rel="stylesheet">
+    <style>
+        :root { --plasma: #bc13fe; --cyan: #00f2ff; --pink: #ff007f; --gold: #ffd700; --green: #2ecc71; --red: #ff4444; --orange: #ff8c00; }
+        
+        body, html { margin: 0; padding: 0; width: 100%; height: 100%; background: #000; font-family: 'Segoe UI', sans-serif; color: white; overflow: hidden; }
+        
+        #tela-painel { display: flex; flex-direction: column; align-items: center; padding: 20px; min-height: 100vh; box-sizing: border-box; background: #000; }
+        .painel-header { font-family: 'Black Ops One'; color: var(--plasma); font-size: 3.5rem; text-shadow: 0 0 15px var(--plasma); margin: 10px 0 20px 0; }
+        
+        .card-topo { background: #111; padding: 25px; border-radius: 12px; border: 2px solid var(--plasma); width: 95%; max-width: 1300px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .input-group { display: flex; gap: 12px; }
+        input, select { padding: 15px; border-radius: 8px; border: 1px solid #444; background: #222; color: white; font-size: 1.2rem; }
+        
+        .btn-acao { font-family: 'Black Ops One'; cursor: pointer; border: none; border-radius: 8px; padding: 15px 30px; color: white; font-size: 1.1rem; transition: 0.3s; }
+        .btn-add { background: var(--plasma); }
+        .btn-arena { background: var(--green); display: none; }
+        .btn-save { background: var(--orange); border: 2px solid white; }
+
+        .grid-painel { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; width: 95%; max-width: 1400px; }
+        .coluna { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 15px; border-top: 8px solid #444; min-height: 600px; }
+        .coluna h2 { font-family: 'Black Ops One'; text-align: center; border-bottom: 2px solid #333; padding-bottom: 15px; font-size: 1.8rem; margin-top: 0; }
+        
+        .item-membro { background: #181818; margin-bottom: 6px; padding: 6px 12px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #333; }
+        .nome-txt { font-size: 1.1rem; font-weight: bold; font-family: 'Black Ops One'; }
+        .controles-individuais { display: flex; gap: 6px; }
+        .btn-flat { width: 32px; height: 32px; border-radius: 4px; border: none; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; color: white; }
+
+        /* ARENA EFEITOS ESPECIAIS */
+        #tela-arena { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 100; background: #000; perspective: 1000px; }
+        canvas { position: absolute; top: 0; left: 0; z-index: 1; }
+        
+        #quadro-ativos { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 90%; max-width: 1100px; background: rgba(0, 0, 0, 0.9); border: 4px solid var(--plasma); padding: 40px; border-radius: 25px; z-index: 5; transition: 1.2s; box-shadow: 0 0 50px rgba(188, 19, 254, 0.5); }
+        #quadro-ativos.minimizado { left: 20px; top: 50%; transform: translateY(-50%); width: 280px; padding: 15px; border-width: 2px; }
+        
+        .colunas-arena { display: flex; justify-content: space-around; gap: 30px; }
+        .lista-nome-arena { font-family: 'Black Ops One'; font-size: 1.8rem; text-align: center; margin: 8px 0; transition: 0.5s; }
+        .lista-nome-arena.eliminado { opacity: 0.05; text-decoration: line-through; color: #fff !important; }
+
+        .winner-box { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0); padding: 70px; background: #000; border: 15px solid var(--gold); text-align: center; box-shadow: 0 0 200px var(--gold); z-index: 2000; transition: 0.7s; visibility: hidden; }
+        .winner-box.reveal { transform: translate(-50%, -50%) scale(1); visibility: visible; animation: winnerPulse 2s infinite; }
+        @keyframes winnerPulse { 0% { box-shadow: 0 0 100px var(--gold); } 50% { box-shadow: 0 0 250px var(--gold); } 100% { box-shadow: 0 0 100px var(--gold); } }
+        
+        .winner-name { font-size: 8.5rem; color: var(--gold); font-family: 'Black Ops One'; text-shadow: 0 0 60px var(--gold); display: block; margin: 25px 0; }
+
+        #loading { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 9999; display: none; justify-content: center; align-items: center; font-family: 'Black Ops One'; font-size: 2.5rem; color: var(--plasma); text-align: center; }
+        
+        .shake { animation: shake 0.4s; }
+        @keyframes shake { 0% { transform: translate(1px, 1px) rotate(0deg); } 20% { transform: translate(-3px, 0px) rotate(1deg); } 40% { transform: translate(3px, 2px) rotate(-1deg); } 60% { transform: translate(-3px, 1px) rotate(0deg); } 80% { transform: translate(3px, 1px) rotate(-1deg); } 100% { transform: translate(1px, -2px) rotate(0deg); } }
+    </style>
+</head>
+<body>
+
+    <div id="loading"><span>SINCRONIZANDO...</span></div>
+
+    <div id="tela-painel">
+        <h1 class="painel-header">ARENA INDUSTRIAL</h1>
+        <div class="card-topo">
+            <div class="input-group">
+                <input type="text" id="nomeInput" placeholder="NOME">
+                <select id="sexoInput">
+                    <option value="HOMEM">HOMEM</option>
+                    <option value="MULHER">MULHER</option>
+                </select>
+                <button class="btn-acao btn-add" onclick="adicionarLocal()">ADICIONAR</button>
+                <button class="btn-acao btn-save" onclick="salvarNaPlanilha()">SALVAR ALTERAÇÕES</button>
+            </div>
+            <button id="btnAbrirArena" class="btn-acao btn-arena" onclick="abrirArena()">ABRIR ARENA</button>
+        </div>
+
+        <div class="grid-painel">
+            <div class="coluna" style="border-color: var(--cyan);"><h2>HOMENS</h2><div id="p-homens"></div></div>
+            <div class="coluna" style="border-color: var(--pink);"><h2>MULHERES</h2><div id="p-mulheres"></div></div>
+            <div class="coluna" style="border-color: var(--gold);"><h2>VENCEDORES</h2><div id="p-vencedores"></div></div>
+        </div>
+    </div>
+
+    <div id="tela-arena">
+        <canvas id="c"></canvas>
+        <div id="quadro-ativos">
+            <div class="colunas-arena">
+                <div id="l-homens" style="flex:1"></div>
+                <button id="btnIniciarArena" class="btn-acao" style="background:var(--green); font-size:2.5rem;" onclick="iniciarSorteio()">INICIAR SHOW</button>
+                <div id="l-mulheres" style="flex:1"></div>
+            </div>
+        </div>
+        <div id="arena-competidores"></div>
+        <div class="winner-box" id="winnerBox">
+            <span id="labelVencedor" style="font-size: 2.5rem; font-family: 'Black Ops One';">VENCEDOR</span>
+            <span class="winner-name" id="winnerName">---</span>
+            <button class="btn-acao" style="background: var(--gold); color: black; font-size: 1.8rem;" onclick="confirmarVitoriaArena()">GRAVAR NO SISTEMA</button>
+        </div>
+    </div>
+
+    <script>
+        const URL_API = "https://script.google.com/macros/s/AKfycbyrwW-oid9uCuhGRpmz_ENjrq1BIFOHDvgcEBiREk9UH8O3eyP91v2zqrYGQr_g_NCv/exec"; 
+        let membros = [];
+        let audioCtx;
+
+        function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+        function playZap(freq = 150) {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(10, audioCtx.currentTime + 0.2);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.2);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+        async function carregarDados() {
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                const r = await fetch(URL_API);
+                membros = await r.json();
+                renderizarPainel();
+            } catch (e) { alert("Erro ao carregar!"); }
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function renderizarPainel() {
+            const h = document.getElementById('p-homens'), m = document.getElementById('p-mulheres'), v = document.getElementById('p-vencedores');
+            h.innerHTML = m.innerHTML = v.innerHTML = '';
+            membros.forEach((mb, i) => {
+                const div = document.createElement('div');
+                div.className = 'item-membro';
+                const cor = mb.sexo === 'HOMEM' ? 'var(--cyan)' : 'var(--pink)';
+                div.innerHTML = `<span class="nome-txt" style="color:${mb.ganhou ? 'var(--gold)' : cor}">${mb.nome}</span>
+                    <div class="controles-individuais">
+                        <button class="btn-flat" style="background:${mb.ganhou?'var(--cyan)':'var(--green)'}; color:black;" onclick="toggleVencedorLocal(${i})">${mb.ganhou?'↺':'🏆'}</button>
+                        <button class="btn-flat" style="background:var(--red);" onclick="deletarLocal(${i})">✕</button>
+                    </div>`;
+                if(mb.ganhou) v.appendChild(div); else if(mb.sexo==='HOMEM') h.appendChild(div); else m.appendChild(div);
+            });
+        }
+
+        function adicionarLocal() {
+            const nome = document.getElementById('nomeInput').value.trim().toUpperCase();
+            if(!nome) return;
+            membros.push({ nome, sexo: document.getElementById('sexoInput').value, ganhou: false });
+            document.getElementById('nomeInput').value = '';
+            document.getElementById('btnAbrirArena').style.display = 'none';
+            renderizarPainel();
+        }
+
+        function deletarLocal(i) { membros.splice(i,1); document.getElementById('btnAbrirArena').style.display='none'; renderizarPainel(); }
+        function toggleVencedorLocal(i) { membros[i].ganhou=!membros[i].ganhou; document.getElementById('btnAbrirArena').style.display='none'; renderizarPainel(); }
+
+        async function salvarNaPlanilha() {
+            document.getElementById('loading').style.display = 'flex';
+            try {
+                await fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'salvar_todos', membros: membros }) });
+                setTimeout(() => { document.getElementById('loading').style.display = 'none'; document.getElementById('btnAbrirArena').style.display = 'block'; }, 1000);
+            } catch (e) { document.getElementById('loading').style.display = 'none'; }
+        }
+
+        const canvas = document.getElementById('c');
+        const ctx = canvas.getContext('2d');
+        let compTela = [], raios = [], particles = [], sorteioAtivo = false, gridY = 0;
+
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.onresize = resize;
+
+        function animFundo() {
+            ctx.fillStyle = '#000'; ctx.fillRect(0,0, canvas.width, canvas.height);
+            
+            // Grid 3D de fundo
+            ctx.strokeStyle = 'rgba(188, 19, 254, 0.2)';
+            ctx.lineWidth = 1;
+            gridY = (gridY + 1) % 40;
+            for(let i=0; i<canvas.width; i+=40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke(); }
+            for(let i=gridY; i<canvas.height; i+=40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(canvas.width, i); ctx.stroke(); }
+
+            raios.forEach((r, i) => {
+                ctx.strokeStyle = "#fff"; ctx.lineWidth = 6; ctx.shadowBlur = 40; ctx.shadowColor = "#fff";
+                ctx.beginPath(); ctx.moveTo(r.x, 0); ctx.lineTo(r.tx, r.ty); ctx.stroke();
+                if(r.life == 10) { for(let p=0; p<15; p++) particles.push({x:r.tx, y:r.ty, vx:Math.random()*10-5, vy:Math.random()*10-5, life:20}); }
+                r.life--; if(r.life <= 0) raios.splice(i, 1);
+            });
+
+            particles.forEach((p, i) => {
+                ctx.fillStyle = "#fff"; ctx.fillRect(p.x, p.y, 3, 3);
+                p.x += p.vx; p.y += p.vy; p.life--; if(p.life<=0) particles.splice(i,1);
+            });
+
+            if(document.getElementById('tela-arena').style.display === 'block') requestAnimationFrame(animFundo);
+        }
+
+        function abrirArena() {
+            initAudio();
+            const ativos = membros.filter(mb => !mb.ganhou);
+            if(ativos.length < 2) return;
+            document.getElementById('tela-painel').style.display = 'none';
+            document.getElementById('tela-arena').style.display = 'block';
+            document.getElementById('l-homens').innerHTML = ativos.filter(x=>x.sexo==='HOMEM').map(x=>`<div class="lista-nome-arena" style="color:var(--cyan)" id="li-${x.nome.replace(/\s+/g,'')}">${x.nome}</div>`).join('');
+            document.getElementById('l-mulheres').innerHTML = ativos.filter(x=>x.sexo==='MULHER').map(x=>`<div class="lista-nome-arena" style="color:var(--pink)" id="li-${x.nome.replace(/\s+/g,'')}">${x.nome}</div>`).join('');
+            resize(); animFundo();
+        }
+
+        function iniciarSorteio() {
+            sorteioAtivo = true;
+            document.getElementById('quadro-ativos').classList.add('minimizado');
+            document.getElementById('btnIniciarArena').style.display = 'none';
+            compTela = membros.filter(mb => !mb.ganhou).map(m => {
+                const el = document.createElement('div');
+                const cor = m.sexo === 'HOMEM' ? 'var(--cyan)' : 'var(--pink)';
+                el.style.cssText = `position:absolute; font-family:'Black Ops One'; font-size:4.5rem; color:${cor}; text-shadow:0 0 25px ${cor}; z-index:2;`;
+                el.innerText = m.nome;
+                document.getElementById('arena-competidores').appendChild(el);
+                return { m, el, ang: Math.random()*6, r: 250+(Math.random()*300), vel: 0.015, vivo: true, par: false };
+            });
+            const loop = () => {
+                if(!sorteioAtivo) return;
+                compTela.forEach(c => { if(c.vivo && !c.par) { 
+                    c.ang += c.vel; 
+                    c.el.style.left = (window.innerWidth/2 + Math.cos(c.ang)*c.r - c.el.offsetWidth/2)+'px';
+                    c.el.style.top = (window.innerHeight/2 + Math.sin(c.ang)*c.r)+'px';
+                }});
+                requestAnimationFrame(loop);
+            };
+            loop(); proximaElim();
+        }
+
+        function proximaElim() {
+            const vivos = compTela.filter(c => c.vivo);
+            if(vivos.length <= 1) { 
+                sorteioAtivo = false;
+                const win = vivos[0];
+                document.getElementById('winnerName').innerText = win.m.nome;
+                const label = win.m.sexo === 'HOMEM' ? 'O GRANDE VENCEDOR' : 'A GRANDE VENCEDORA';
+                document.getElementById('labelVencedor').innerText = label;
+                document.getElementById('winnerBox').classList.add('reveal');
+                playZap(50); playZap(100);
+                const msgWin = new SpeechSynthesisUtterance(`${label} foi ${win.m.nome}`);
+                msgWin.lang = 'pt-BR'; window.speechSynthesis.speak(msgWin);
+                return;
+            }
+            setTimeout(() => {
+                const alvo = vivos[Math.floor(Math.random()*vivos.length)];
+                alvo.par = true; 
+                alvo.el.style.color = "#fff"; alvo.el.style.textShadow = "0 0 50px #fff";
+                const rect = alvo.el.getBoundingClientRect();
+                raios.push({tx: rect.left+rect.width/2, ty: rect.top+rect.height/2, x: rect.left+rect.width/2, life: 10});
+                
+                document.getElementById('tela-arena').classList.add('shake');
+                playZap(200);
+                setTimeout(() => document.getElementById('tela-arena').classList.remove('shake'), 400);
+
+                const elimTxt = alvo.m.sexo === 'HOMEM' ? 'foi eliminado' : 'foi eliminada';
+                const msg = new SpeechSynthesisUtterance(`${alvo.m.nome} ${elimTxt}`);
+                msg.lang = 'pt-BR';
+                msg.onend = () => { 
+                    alvo.vivo = false; alvo.el.style.display = 'none'; 
+                    const li = document.getElementById('li-'+alvo.m.nome.replace(/\s+/g,''));
+                    if(li) li.classList.add('eliminado');
+                    proximaElim(); 
+                };
+                window.speechSynthesis.speak(msg);
+            }, 3000);
+        }
+
+        async function confirmarVitoriaArena() {
+            const nome = document.getElementById('winnerName').innerText;
+            const idx = membros.findIndex(m => m.nome === nome);
+            if(idx !== -1) membros[idx].ganhou = true;
+            document.getElementById('loading').style.display = 'flex';
+            await fetch(URL_API, { method: 'POST', mode: 'no-cors', body: JSON.stringify({ action: 'salvar_todos', membros: membros }) });
+            setTimeout(() => location.reload(), 1500);
+        }
+
+        carregarDados();
+    </script>
+</body>
+</html>

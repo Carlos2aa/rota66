@@ -15,6 +15,7 @@
             --peach: #fff3e0;
             --text: #455a64;
             --white: #ffffff;
+            --overlay: rgba(0, 0, 0, 0.4);
         }
 
         body {
@@ -46,7 +47,6 @@
             border-radius: 20px;
             color: var(--text);
             transition: 0.3s;
-            font-size: 0.9rem;
         }
 
         nav button.active { background: var(--mint); color: var(--mint-dark); font-weight: 700; }
@@ -75,19 +75,42 @@
         .timeline-item {
             display: flex; align-items: center; background: white; margin-bottom: 8px;
             padding: 15px 25px; border-radius: 15px; border-left: 5px solid #eee;
+            transition: transform 0.2s;
         }
+        .timeline-item.free { border-left-color: var(--mint-dark); cursor: pointer; }
+        .timeline-item.free:hover { transform: scale(1.01); background: var(--mint); }
         .timeline-item.occupied { border-left-color: var(--lavender-dark); background: var(--lavender); }
-        .timeline-item.free { border-left-color: var(--mint-dark); color: #999; }
         .time-slot { font-weight: 700; width: 80px; }
         .patient-name { flex: 1; }
 
-        /* Histórico UI */
+        /* Overlay / Modal */
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay);
+            z-index: 100;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(3px);
+        }
+        .modal {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideUp 0.3s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Histórico */
         .prontuario-item {
             background: #fff; border: 1px solid #eee; padding: 15px;
             border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--lavender-dark);
         }
-        .prontuario-data { font-weight: bold; color: var(--lavender-dark); font-size: 0.9rem; }
-        .prontuario-texto { margin-top: 8px; white-space: pre-wrap; line-height: 1.4; }
+        .prontuario-data { font-weight: bold; color: var(--lavender-dark); font-size: 0.8rem; }
 
         footer { text-align: center; padding: 20px; font-size: 0.9rem; color: #90a4ae; }
         footer strong { color: var(--mint-dark); }
@@ -98,10 +121,20 @@
     <nav>
         <button onclick="showScreen('screen-agenda')" id="nav-agenda" class="active">📅 Agenda</button>
         <button onclick="showScreen('screen-cadastro')" id="nav-cadastro">👤 Cadastro</button>
-        <button onclick="showScreen('screen-marcar')" id="nav-marcar">✏️ Marcar</button>
         <button onclick="showScreen('screen-prontuario')" id="nav-prontuario">📝 Evolução</button>
         <button onclick="showScreen('screen-historico')" id="nav-historico">📚 Histórico</button>
     </nav>
+
+    <div id="overlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <h3 id="modal-titulo" style="margin-top:0; color: var(--mint-dark);">Agendar Horário</h3>
+            <p id="modal-horario-info" style="font-weight: bold;"></p>
+            <label>Selecione o Paciente:</label>
+            <select id="sel-paciente-modal"></select>
+            <button class="btn-save" onclick="confirmarAgendamentoRapido()">Confirmar Agendamento</button>
+            <button onclick="closeModal(null)" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer; color:#999;">Cancelar</button>
+        </div>
+    </div>
 
     <section id="screen-agenda" class="screen active">
         <div class="container">
@@ -124,19 +157,7 @@
                     <div class="form-group"><label>Telefone</label><input type="text" id="c-tel"></div>
                     <div class="form-group full-width"><label>Endereço</label><input type="text" id="c-end"></div>
                 </div>
-                <button class="btn-save" onclick="salvarPaciente()">Salvar Paciente</button>
-            </div>
-        </div>
-    </section>
-
-    <section id="screen-marcar" class="screen">
-        <div class="container">
-            <div class="card" style="background: var(--peach);">
-                <h2>Novo Agendamento</h2>
-                <label>Paciente</label><select id="sel-paciente"></select>
-                <label style="display:block; margin-top:15px;">Data e Hora</label>
-                <input type="datetime-local" id="ag-data-hora">
-                <button class="btn-save" style="background: #ffa726;" onclick="agendar()">Confirmar</button>
+                <button class="btn-save" onclick="salvarPaciente()">Salvar Cadastro</button>
             </div>
         </div>
     </section>
@@ -157,10 +178,8 @@
         <div class="container">
             <div class="card">
                 <h2>Consultar Prontuários</h2>
-                <label>Selecione o Paciente para ver o histórico</label>
                 <select id="sel-paciente-hist" onchange="renderHistorico()"></select>
-                <div id="lista-prontuarios" style="margin-top:20px;">
-                    </div>
+                <div id="lista-prontuarios" style="margin-top:20px;"></div>
             </div>
         </div>
     </section>
@@ -171,6 +190,8 @@
         let pacientes = JSON.parse(localStorage.getItem('db_pacientes')) || [];
         let consultas = JSON.parse(localStorage.getItem('db_consultas')) || [];
         let prontuarios = JSON.parse(localStorage.getItem('db_prontuarios')) || [];
+        
+        let slotSelecionado = null; // Armazena temporariamente o horário clicado
 
         document.getElementById('filtro-data').valueAsDate = new Date();
 
@@ -179,13 +200,12 @@
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             document.getElementById('nav-' + id.split('-')[1]).classList.add('active');
-            
             popularSelects();
             if(id === 'screen-agenda') renderTimeline();
         }
 
         function popularSelects() {
-            const ids = ['sel-paciente', 'sel-paciente-pr', 'sel-paciente-hist'];
+            const ids = ['sel-paciente-modal', 'sel-paciente-pr', 'sel-paciente-hist'];
             ids.forEach(id => {
                 const s = document.getElementById(id);
                 s.innerHTML = '<option value="">--- Selecione o Paciente ---</option>';
@@ -193,6 +213,57 @@
             });
         }
 
+        function renderTimeline() {
+            const container = document.getElementById('timeline-container');
+            const dataFiltro = document.getElementById('filtro-data').value;
+            container.innerHTML = "";
+
+            for(let h = 8; h <= 18; h++) {
+                const horaStr = h.toString().padStart(2, '0') + ":00";
+                const ag = consultas.find(c => c.data.split('T')[0] === dataFiltro && c.data.split('T')[1]?.substring(0,5) === horaStr);
+                
+                const div = document.createElement('div');
+                div.className = `timeline-item ${ag ? 'occupied' : 'free'}`;
+                
+                if(!ag) {
+                    div.onclick = () => openModal(dataFiltro, horaStr);
+                }
+
+                div.innerHTML = `
+                    <div class="time-slot">${horaStr}</div>
+                    <div class="patient-name">${ag ? ag.paciente : 'Livre (Clique para marcar)'}</div>
+                    ${ag ? `<button onclick="cancelar('${ag.data}')" style="border:none; background:none; cursor:pointer;">✕</button>` : ''}
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Funções do Modal
+        function openModal(data, hora) {
+            slotSelecionado = { data, hora };
+            document.getElementById('modal-horario-info').innerText = `${data.split('-').reverse().join('/')} às ${hora}`;
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        function closeModal(e) {
+            document.getElementById('overlay').style.display = 'none';
+        }
+
+        function confirmarAgendamentoRapido() {
+            const pIdx = document.getElementById('sel-paciente-modal').value;
+            if(pIdx === "") return alert("Selecione um paciente");
+
+            consultas.push({
+                paciente: pacientes[pIdx].nome,
+                data: `${slotSelecionado.data}T${slotSelecionado.hora}`
+            });
+
+            localStorage.setItem('db_consultas', JSON.stringify(consultas));
+            closeModal();
+            renderTimeline();
+        }
+
+        // Restante das funções originais
         function salvarPaciente() {
             const nome = document.getElementById('c-nome').value;
             if(!nome) return alert("Nome obrigatório");
@@ -209,37 +280,8 @@
             showScreen('screen-agenda');
         }
 
-        function agendar() {
-            const pIdx = document.getElementById('sel-paciente').value;
-            const dataHora = document.getElementById('ag-data-hora').value;
-            if(pIdx === "" || !dataHora) return alert("Preencha tudo");
-
-            consultas.push({ paciente: pacientes[pIdx].nome, data: dataHora });
-            localStorage.setItem('db_consultas', JSON.stringify(consultas));
-            alert("Agendado!");
-            showScreen('screen-agenda');
-        }
-
-        function renderTimeline() {
-            const container = document.getElementById('timeline-container');
-            const dataFiltro = document.getElementById('filtro-data').value;
-            container.innerHTML = "";
-
-            for(let h = 8; h <= 18; h++) {
-                const horaStr = h.toString().padStart(2, '0') + ":00";
-                const ag = consultas.find(c => c.data.split('T')[0] === dataFiltro && c.data.split('T')[1]?.substring(0,5) === horaStr);
-                
-                container.innerHTML += `
-                    <div class="timeline-item ${ag ? 'occupied' : 'free'}">
-                        <div class="time-slot">${horaStr}</div>
-                        <div class="patient-name">${ag ? ag.paciente : 'Livre'}</div>
-                        ${ag ? `<button onclick="cancelar('${ag.data}')" style="border:none; background:none; cursor:pointer;">✕</button>` : ''}
-                    </div>`;
-            }
-        }
-
         function cancelar(dh) {
-            if(confirm("Cancelar?")) {
+            if(confirm("Cancelar consulta?")) {
                 consultas = consultas.filter(c => c.data !== dh);
                 localStorage.setItem('db_consultas', JSON.stringify(consultas));
                 renderTimeline();
@@ -249,45 +291,35 @@
         function salvarProntuario() {
             const pIdx = document.getElementById('sel-paciente-pr').value;
             const texto = document.getElementById('pr-relato').value;
-            if(pIdx === "" || !texto) return alert("Selecione o paciente e escreva o relato.");
+            if(pIdx === "" || !texto) return alert("Selecione o paciente e escreva.");
 
             const agora = new Date();
             prontuarios.push({
                 pacienteNome: pacientes[pIdx].nome,
                 data: agora.toLocaleDateString('pt-BR'),
-                hora: agora.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'}),
+                hora: agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
                 texto: texto
             });
-
             localStorage.setItem('db_prontuarios', JSON.stringify(prontuarios));
-            alert("Sessão salva no histórico!");
+            alert("Salvo!");
             document.getElementById('pr-relato').value = "";
-            showScreen('screen-historico');
         }
 
         function renderHistorico() {
             const pIdx = document.getElementById('sel-paciente-hist').value;
             const container = document.getElementById('lista-prontuarios');
             container.innerHTML = "";
-
             if(pIdx === "") return;
 
-            const nomeBuscado = pacientes[pIdx].nome;
-            const filtrados = prontuarios.filter(p => p.pacienteNome === nomeBuscado);
+            const filtrados = prontuarios.filter(p => p.pacienteNome === pacientes[pIdx].nome);
+            if(filtrados.length === 0) { container.innerHTML = "<p>Sem registros.</p>"; return; }
 
-            if(filtrados.length === 0) {
-                container.innerHTML = "<p>Nenhum prontuário encontrado para este paciente.</p>";
-                return;
-            }
-
-            // Mostrar do mais recente para o mais antigo
             filtrados.reverse().forEach(p => {
                 container.innerHTML += `
                     <div class="prontuario-item">
                         <div class="prontuario-data">${p.data} às ${p.hora}</div>
                         <div class="prontuario-texto">${p.texto}</div>
-                    </div>
-                `;
+                    </div>`;
             });
         }
 

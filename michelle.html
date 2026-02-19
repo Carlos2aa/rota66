@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Clínica Serenity - Gestão Completa</title>
+    <title>Clínica Serenity - Sistema de Prontuários</title>
     <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -58,59 +58,51 @@
         .container { max-width: 1000px; margin: 0 auto; }
         .card { background: var(--white); padding: 30px; border-radius: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.02); margin-bottom: 20px; }
 
-        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .full-width { grid-column: span 2; }
+        h2 { font-weight: 500; color: var(--mint-dark); margin-bottom: 20px; border-bottom: 1px solid var(--mint); padding-bottom: 10px; }
+
+        .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .span-2 { grid-column: span 2; }
+        .span-3 { grid-column: span 3; }
+
+        .form-group { display: flex; flex-direction: column; }
+        label { font-size: 0.85rem; font-weight: 500; margin-bottom: 4px; }
 
         input, select, textarea {
-            width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #ddd;
-            font-family: inherit; margin-top: 5px; box-sizing: border-box;
+            width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ddd;
+            font-family: inherit; box-sizing: border-box; background: #fafafa;
         }
+
+        .checkbox-group { display: flex; align-items: center; gap: 15px; padding-top: 25px; }
+        .checkbox-group label { display: flex; align-items: center; gap: 5px; cursor: pointer; }
 
         button.btn-save {
             background: var(--mint-dark); color: white; border: none; padding: 15px;
-            width: 100%; border-radius: 10px; cursor: pointer; font-weight: 700; margin-top: 20px;
+            width: 100%; border-radius: 10px; cursor: pointer; font-weight: 700; margin-top: 25px;
+            transition: 0.3s;
         }
 
-        /* Agenda UI */
+        /* Agenda */
         .timeline-item {
             display: flex; align-items: center; background: white; margin-bottom: 8px;
             padding: 15px 25px; border-radius: 15px; border-left: 5px solid #eee;
-            transition: transform 0.2s;
         }
         .timeline-item.free { border-left-color: var(--mint-dark); cursor: pointer; }
-        .timeline-item.free:hover { transform: scale(1.01); background: var(--mint); }
         .timeline-item.occupied { border-left-color: var(--lavender-dark); background: var(--lavender); }
         .time-slot { font-weight: 700; width: 80px; }
         .patient-name { flex: 1; }
 
-        /* Overlay / Modal */
+        /* Modal */
         #overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--overlay);
-            z-index: 100;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(3px);
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay); z-index: 100; justify-content: center; align-items: center; backdrop-filter: blur(3px);
         }
-        .modal {
-            background: white;
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 400px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            animation: slideUp 0.3s ease;
-        }
-        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .modal { background: white; padding: 30px; border-radius: 20px; width: 90%; max-width: 400px; }
 
-        /* Histórico */
-        .prontuario-item {
-            background: #fff; border: 1px solid #eee; padding: 15px;
-            border-radius: 12px; margin-top: 10px; border-left: 4px solid var(--lavender-dark);
-        }
-        .prontuario-data { font-weight: bold; color: var(--lavender-dark); font-size: 0.8rem; }
+        /* Prontuários Histórico */
+        .hist-item { background: white; padding: 20px; border-radius: 15px; border-left: 5px solid var(--lavender-dark); margin-bottom: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.03); }
+        .hist-header { display: flex; justify-content: space-between; font-size: 0.85rem; color: var(--lavender-dark); font-weight: bold; margin-bottom: 10px; }
+        .hist-section-title { font-size: 0.75rem; text-transform: uppercase; color: #90a4ae; margin-top: 10px; font-weight: 700; }
+        .hist-content { font-size: 0.95rem; line-height: 1.5; color: var(--text); margin-bottom: 10px; }
 
         footer { text-align: center; padding: 20px; font-size: 0.9rem; color: #90a4ae; }
         footer strong { color: var(--mint-dark); }
@@ -121,25 +113,23 @@
     <nav>
         <button onclick="showScreen('screen-agenda')" id="nav-agenda" class="active">📅 Agenda</button>
         <button onclick="showScreen('screen-cadastro')" id="nav-cadastro">👤 Cadastro</button>
-        <button onclick="showScreen('screen-prontuario')" id="nav-prontuario">📝 Evolução</button>
+        <button onclick="showScreen('screen-prontuario')" id="nav-prontuario">📝 Prontuário</button>
         <button onclick="showScreen('screen-historico')" id="nav-historico">📚 Histórico</button>
     </nav>
 
-    <div id="overlay" onclick="closeModal(event)">
+    <div id="overlay" onclick="this.style.display='none'">
         <div class="modal" onclick="event.stopPropagation()">
-            <h3 id="modal-titulo" style="margin-top:0; color: var(--mint-dark);">Agendar Horário</h3>
-            <p id="modal-horario-info" style="font-weight: bold;"></p>
-            <label>Selecione o Paciente:</label>
+            <h3 style="color: var(--mint-dark)">Agendar Horário</h3>
+            <p id="modal-horario-info"></p>
             <select id="sel-paciente-modal"></select>
-            <button class="btn-save" onclick="confirmarAgendamentoRapido()">Confirmar Agendamento</button>
-            <button onclick="closeModal(null)" style="width:100%; background:none; border:none; margin-top:10px; cursor:pointer; color:#999;">Cancelar</button>
+            <button class="btn-save" onclick="confirmarAgendamentoRapido()">Confirmar</button>
         </div>
     </div>
 
     <section id="screen-agenda" class="screen active">
         <div class="container">
             <div style="text-align:center; margin-bottom:20px;">
-                Visualizar dia: <input type="date" id="filtro-data" onchange="renderTimeline()">
+                Dia: <input type="date" id="filtro-data" onchange="renderTimeline()">
             </div>
             <div id="timeline-container"></div>
         </div>
@@ -148,16 +138,35 @@
     <section id="screen-cadastro" class="screen">
         <div class="container">
             <div class="card">
-                <h2>Cadastro de Paciente</h2>
+                <h2>Cadastro do Paciente</h2>
                 <div class="form-grid">
-                    <div class="form-group full-width"><label>Nome</label><input type="text" id="c-nome"></div>
-                    <div class="form-group"><label>E-mail</label><input type="email" id="c-email"></div>
+                    <div class="form-group span-2"><label>Nome Completo</label><input type="text" id="c-nome"></div>
+                    <div class="form-group"><label>CPF</label><input type="text" id="c-cpf"></div>
+                    <div class="form-group"><label>Nascimento</label><input type="date" id="c-nasc" onchange="calcularIdadeAuto()"></div>
+                    <div class="form-group"><label>Idade</label><input type="text" id="c-idade" readonly></div>
                     <div class="form-group"><label>Sexo</label><select id="c-sexo"><option>Feminino</option><option>Masculino</option><option>Outro</option></select></div>
-                    <div class="form-group"><label>Idade</label><input type="number" id="c-idade"></div>
+                    <div class="form-group"><label>Profissão</label><input type="text" id="c-profissao"></div>
+                    <div class="form-group"><label>Estado Civil</label><select id="c-civil"><option>Solteiro(a)</option><option>Casado(a)</option><option>Divorciado(a)</option><option>Viúvo(a)</option></select></div>
                     <div class="form-group"><label>Telefone</label><input type="text" id="c-tel"></div>
-                    <div class="form-group full-width"><label>Endereço</label><input type="text" id="c-end"></div>
+                    <div class="form-group span-2"><label>E-mail</label><input type="email" id="c-email"></div>
+                    <div class="form-group"><label>Endereço</label><input type="text" id="c-end"></div>
+                    <div class="form-group span-2"><label>Nome de Familiar (Emergência)</label><input type="text" id="c-fam-nome"></div>
+                    <div class="form-group"><label>Telefone Familiar</label><input type="text" id="c-fam-tel"></div>
+                    <div class="form-group"><label>Valor Sessão (R$)</label><input type="number" id="c-valor-sessao"></div>
+                    <div class="checkbox-group">
+                        <label>Pacote?</label>
+                        <label><input type="radio" name="pacote" value="sim"> Sim</label>
+                        <label><input type="radio" name="pacote" value="nao" checked> Não</label>
+                    </div>
+                    <div class="form-group"><label>Valor do Pacote (R$)</label><input type="number" id="c-valor-pacote"></div>
+                    <div class="checkbox-group">
+                        <label>Recibo?</label>
+                        <label><input type="radio" name="recibo" value="sim"> Sim</label>
+                        <label><input type="radio" name="recibo" value="nao" checked> Não</label>
+                    </div>
+                    <div class="form-group span-3"><label>Observação Clínica Inicial</label><textarea id="c-obs" rows="2"></textarea></div>
                 </div>
-                <button class="btn-save" onclick="salvarPaciente()">Salvar Cadastro</button>
+                <button class="btn-save" onclick="salvarPaciente()">Salvar Prontuário</button>
             </div>
         </div>
     </section>
@@ -165,11 +174,20 @@
     <section id="screen-prontuario" class="screen">
         <div class="container">
             <div class="card">
-                <h2>Registrar Evolução</h2>
+                <h2>Registrar Prontuário</h2>
                 <label>Paciente</label><select id="sel-paciente-pr"></select>
-                <label style="display:block; margin-top:15px;">Anotações</label>
-                <textarea id="pr-relato" rows="8"></textarea>
-                <button class="btn-save" style="background: var(--lavender-dark);" onclick="salvarProntuario()">Salvar Sessão</button>
+                
+                <div class="form-group" style="margin-top:20px;">
+                    <label>Síntese do Atendimento</label>
+                    <textarea id="pr-sintese" rows="4" placeholder="Breve resumo da sessão..."></textarea>
+                </div>
+
+                <div class="form-group" style="margin-top:20px;">
+                    <label>Registro e Evolução do Paciente</label>
+                    <textarea id="pr-evolucao" rows="8" placeholder="Detalhes técnicos, observações e evolução..."></textarea>
+                </div>
+
+                <button class="btn-save" style="background: var(--lavender-dark);" onclick="salvarProntuarioSessao()">Salvar Prontuário</button>
             </div>
         </div>
     </section>
@@ -177,7 +195,7 @@
     <section id="screen-historico" class="screen">
         <div class="container">
             <div class="card">
-                <h2>Consultar Prontuários</h2>
+                <h2>Histórico de Prontuários</h2>
                 <select id="sel-paciente-hist" onchange="renderHistorico()"></select>
                 <div id="lista-prontuarios" style="margin-top:20px;"></div>
             </div>
@@ -187,13 +205,22 @@
     <footer>Desenvolvido por <strong>Carlos Almeida</strong> &copy; 2026</footer>
 
     <script>
-        let pacientes = JSON.parse(localStorage.getItem('db_pacientes')) || [];
-        let consultas = JSON.parse(localStorage.getItem('db_consultas')) || [];
-        let prontuarios = JSON.parse(localStorage.getItem('db_prontuarios')) || [];
-        
-        let slotSelecionado = null; // Armazena temporariamente o horário clicado
+        let pacientes = JSON.parse(localStorage.getItem('db_pacientes_serenity')) || [];
+        let consultas = JSON.parse(localStorage.getItem('db_consultas_serenity')) || [];
+        let historico = JSON.parse(localStorage.getItem('db_historico_serenity')) || [];
+        let slotSelecionado = null;
 
         document.getElementById('filtro-data').valueAsDate = new Date();
+
+        function calcularIdadeAuto() {
+            const nasc = document.getElementById('c-nasc').value;
+            if(!nasc) return;
+            const hoje = new Date();
+            const nascData = new Date(nasc);
+            let idade = hoje.getFullYear() - nascData.getFullYear();
+            if (hoje.getMonth() < nascData.getMonth() || (hoje.getMonth() === nascData.getMonth() && hoje.getDate() < nascData.getDate())) idade--;
+            document.getElementById('c-idade').value = idade + " anos";
+        }
 
         function showScreen(id) {
             document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
@@ -213,96 +240,65 @@
             });
         }
 
+        function salvarPaciente() {
+            const p = {
+                nome: document.getElementById('c-nome').value,
+                nascimento: document.getElementById('c-nasc').value,
+                idade: document.getElementById('c-idade').value,
+                cpf: document.getElementById('c-cpf').value,
+                obs_clinica: document.getElementById('c-obs').value
+            };
+            if(!p.nome) return alert("Nome é obrigatório");
+            pacientes.push(p);
+            localStorage.setItem('db_pacientes_serenity', JSON.stringify(pacientes));
+            alert("Paciente Cadastrado!");
+            showScreen('screen-agenda');
+        }
+
         function renderTimeline() {
             const container = document.getElementById('timeline-container');
             const dataFiltro = document.getElementById('filtro-data').value;
             container.innerHTML = "";
-
             for(let h = 8; h <= 18; h++) {
-                const horaStr = h.toString().padStart(2, '0') + ":00";
-                const ag = consultas.find(c => c.data.split('T')[0] === dataFiltro && c.data.split('T')[1]?.substring(0,5) === horaStr);
-                
+                const hora = h.toString().padStart(2, '0') + ":00";
+                const ag = consultas.find(c => c.data === dataFiltro && c.hora === hora);
                 const div = document.createElement('div');
                 div.className = `timeline-item ${ag ? 'occupied' : 'free'}`;
-                
-                if(!ag) {
-                    div.onclick = () => openModal(dataFiltro, horaStr);
-                }
-
-                div.innerHTML = `
-                    <div class="time-slot">${horaStr}</div>
-                    <div class="patient-name">${ag ? ag.paciente : 'Livre (Clique para marcar)'}</div>
-                    ${ag ? `<button onclick="cancelar('${ag.data}')" style="border:none; background:none; cursor:pointer;">✕</button>` : ''}
-                `;
+                div.innerHTML = `<div class="time-slot">${hora}</div><div class="patient-name">${ag ? ag.paciente : 'Livre'}</div>`;
+                if(!ag) div.onclick = () => { slotSelecionado = {data: dataFiltro, hora: hora}; document.getElementById('overlay').style.display='flex'; };
                 container.appendChild(div);
             }
         }
 
-        // Funções do Modal
-        function openModal(data, hora) {
-            slotSelecionado = { data, hora };
-            document.getElementById('modal-horario-info').innerText = `${data.split('-').reverse().join('/')} às ${hora}`;
-            document.getElementById('overlay').style.display = 'flex';
-        }
-
-        function closeModal(e) {
-            document.getElementById('overlay').style.display = 'none';
-        }
-
         function confirmarAgendamentoRapido() {
             const pIdx = document.getElementById('sel-paciente-modal').value;
-            if(pIdx === "") return alert("Selecione um paciente");
-
-            consultas.push({
-                paciente: pacientes[pIdx].nome,
-                data: `${slotSelecionado.data}T${slotSelecionado.hora}`
-            });
-
-            localStorage.setItem('db_consultas', JSON.stringify(consultas));
-            closeModal();
+            if(!pIdx) return;
+            consultas.push({ paciente: pacientes[pIdx].nome, data: slotSelecionado.data, hora: slotSelecionado.hora });
+            localStorage.setItem('db_consultas_serenity', JSON.stringify(consultas));
+            document.getElementById('overlay').style.display='none';
             renderTimeline();
         }
 
-        // Restante das funções originais
-        function salvarPaciente() {
-            const nome = document.getElementById('c-nome').value;
-            if(!nome) return alert("Nome obrigatório");
-            pacientes.push({
-                nome, 
-                email: document.getElementById('c-email').value,
-                sexo: document.getElementById('c-sexo').value,
-                idade: document.getElementById('c-idade').value,
-                tel: document.getElementById('c-tel').value,
-                end: document.getElementById('c-end').value
-            });
-            localStorage.setItem('db_pacientes', JSON.stringify(pacientes));
-            alert("Cadastrado!");
-            showScreen('screen-agenda');
-        }
-
-        function cancelar(dh) {
-            if(confirm("Cancelar consulta?")) {
-                consultas = consultas.filter(c => c.data !== dh);
-                localStorage.setItem('db_consultas', JSON.stringify(consultas));
-                renderTimeline();
-            }
-        }
-
-        function salvarProntuario() {
+        function salvarProntuarioSessao() {
             const pIdx = document.getElementById('sel-paciente-pr').value;
-            const texto = document.getElementById('pr-relato').value;
-            if(pIdx === "" || !texto) return alert("Selecione o paciente e escreva.");
+            const sintese = document.getElementById('pr-sintese').value;
+            const evolucao = document.getElementById('pr-evolucao').value;
+            
+            if(!pIdx || !sintese || !evolucao) return alert("Por favor, preencha todos os campos.");
 
-            const agora = new Date();
-            prontuarios.push({
-                pacienteNome: pacientes[pIdx].nome,
-                data: agora.toLocaleDateString('pt-BR'),
-                hora: agora.toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
-                texto: texto
+            historico.push({
+                nome: pacientes[pIdx].nome,
+                data: new Date().toLocaleDateString('pt-BR'),
+                hora: new Date().toLocaleTimeString('pt-BR', {hour:'2-digit', minute:'2-digit'}),
+                sintese: sintese,
+                evolucao: evolucao
             });
-            localStorage.setItem('db_prontuarios', JSON.stringify(prontuarios));
-            alert("Salvo!");
-            document.getElementById('pr-relato').value = "";
+
+            localStorage.setItem('db_historico_serenity', JSON.stringify(historico));
+            alert("Prontuário salvo com sucesso!");
+            document.getElementById('pr-sintese').value = "";
+            document.getElementById('pr-evolucao').value = "";
+            showScreen('screen-historico');
         }
 
         function renderHistorico() {
@@ -311,14 +307,19 @@
             container.innerHTML = "";
             if(pIdx === "") return;
 
-            const filtrados = prontuarios.filter(p => p.pacienteNome === pacientes[pIdx].nome);
-            if(filtrados.length === 0) { container.innerHTML = "<p>Sem registros.</p>"; return; }
+            const filtrados = historico.filter(h => h.nome === pacientes[pIdx].nome);
+            if(filtrados.length === 0) { container.innerHTML = "Nenhum prontuário registrado."; return; }
 
-            filtrados.reverse().forEach(p => {
+            filtrados.reverse().forEach(h => {
                 container.innerHTML += `
-                    <div class="prontuario-item">
-                        <div class="prontuario-data">${p.data} às ${p.hora}</div>
-                        <div class="prontuario-texto">${p.texto}</div>
+                    <div class="hist-item">
+                        <div class="hist-header"><span>Sessão: ${h.data}</span> <span>${h.hora}</span></div>
+                        
+                        <div class="hist-section-title">Síntese do Atendimento:</div>
+                        <div class="hist-content">${h.sintese}</div>
+                        
+                        <div class="hist-section-title">Registro e Evolução:</div>
+                        <div class="hist-content">${h.evolucao}</div>
                     </div>`;
             });
         }

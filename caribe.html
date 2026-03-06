@@ -5,159 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Restaurante Caribe</title>
     <style>
-        /* VOLTANDO AO ESTILO ORIGINAL */
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 20px;
-        }
-
-        h1 {
-            text-align: center;
-            margin-bottom: 20px;
-            font-size: 2.5rem;
-        }
-
-        .config-atendente {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .config-atendente input {
-            padding: 10px;
-            font-size: 16px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            width: 250px;
-        }
-
-        .categorias {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-bottom: 25px;
-            flex-wrap: wrap;
-        }
-
-        .categorias button {
-            padding: 10px 18px;
-            border: none;
-            background: #333;
-            color: white;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        .categorias button.ativo {
-            background: #f1c40f;
-            color: black;
-            font-weight: bold;
-        }
-
-        .grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 15px;
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        .card {
-            background: white;
-            border-radius: 10px;
-            padding: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-            text-align: center;
-            width: 220px;
-            border: 2px solid transparent;
-        }
-
-        .card.ativo {
-            background: #ffe066;
-            border: 2px solid #ffcc00;
-        }
-
-        .nome {
-            font-weight: bold;
-            font-size: 18px;
-            margin-bottom: 8px;
-            color: #222;
-        }
-
-        .preco {
-            color: #666;
-            margin-bottom: 12px;
-            font-size: 15px;
-            font-weight: bold;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .controls button {
-            width: 35px;
-            height: 35px;
-            border: none;
-            background: #222;
-            color: white;
-            font-size: 20px;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        .controls span {
-            font-size: 18px;
-            font-weight: bold;
-            min-width: 30px;
-        }
-
-        .total {
-            margin-top: 40px;
-            text-align: center;
-            font-size: 36px;
-            font-weight: bold;
-            color: #1a1a1a;
-        }
-
-        .botoes {
-            margin-top: 25px;
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            flex-wrap: wrap;
-        }
-
-        .botoes button {
-            padding: 15px 30px;
-            font-size: 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
+        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
+        h1 { text-align: center; margin-bottom: 20px; font-size: 2.5rem; }
+        .config-atendente { text-align: center; margin-bottom: 20px; }
+        .config-atendente input { padding: 10px; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; width: 250px; }
+        .categorias { display: flex; justify-content: center; gap: 10px; margin-bottom: 25px; flex-wrap: wrap; }
+        .categorias button { padding: 10px 18px; border: none; background: #333; color: white; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        .categorias button.ativo { background: #f1c40f; color: black; font-weight: bold; }
+        .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; max-width: 1200px; margin: auto; }
+        .card { background: white; border-radius: 10px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); text-align: center; width: 220px; border: 2px solid transparent; }
+        .card.ativo { background: #ffe066; border: 2px solid #ffcc00; }
+        .nome { font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #222; }
+        .preco { color: #666; margin-bottom: 12px; font-size: 15px; font-weight: bold; }
+        .controls { display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .controls button { width: 35px; height: 35px; border: none; background: #222; color: white; font-size: 20px; border-radius: 5px; cursor: pointer; }
+        .controls span { font-size: 18px; font-weight: bold; min-width: 30px; }
+        .total { margin-top: 40px; text-align: center; font-size: 36px; font-weight: bold; color: #1a1a1a; }
+        .botoes { margin-top: 25px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .botoes button { padding: 15px 30px; font-size: 18px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; }
         .copiar { background: #27ae60; color: white; }
         .limpar { background: #c0392b; color: white; }
         .fechar { background: #2980b9; color: white; }
-
-        .recibo {
-            display: none;
-            max-width: 450px;
-            margin: 40px auto;
-            background: white;
-            padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.15);
-            font-family: 'Courier New', Courier, monospace;
-        }
-
+        .recibo { display: none; max-width: 450px; margin: 40px auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.15); font-family: 'Courier New', Courier, monospace; }
         .linha { display: flex; justify-content: space-between; margin: 8px 0; }
         hr { border: none; border-top: 1px dashed #333; margin: 15px 0; }
     </style>
@@ -179,9 +48,7 @@
 
 <div class="grid" id="menu"></div>
 
-<div class="total">
-    TOTAL: R$ <span id="total">0</span>
-</div>
+<div class="total">TOTAL: R$ <span id="total">0</span></div>
 
 <div class="botoes">
     <button class="copiar" onclick="copiar()">Copiar Conta</button>
@@ -239,17 +106,14 @@
     function carregar() {
         const menu = document.getElementById("menu");
         menu.innerHTML = "";
-        
         let lista = produtos.filter(p => p.categoria === categoriaAtual);
-        
-        // Reordenar: selecionados primeiro
         lista.sort((a, b) => (carrinho[b.id] || 0) - (carrinho[a.id] || 0));
 
         lista.forEach(p => {
             const qtd = carrinho[p.id] || 0;
             const div = document.createElement("div");
             div.className = `card ${qtd > 0 ? "ativo" : ""}`;
-            // AQUI ESTÁ A CORREÇÃO: Passando o ID fixo como string
+            // CORREÇÃO AQUI: Passando p.id (ID fixo) para a função alterar
             div.innerHTML = `
                 <div class="nome">${p.nome}</div>
                 <div class="preco">R$ ${p.preco}</div>
@@ -293,11 +157,8 @@
     function copiar() {
         const atendente = document.getElementById("atendente").value.trim();
         if(!atendente) return alert("Informe o atendente!");
-        
         let texto = `Restaurante Caribe\nAtendente: ${atendente}\n\n`;
-        produtos.forEach(p => {
-            if(carrinho[p.id] > 0) texto += `${p.nome} x${carrinho[p.id]} - R$ ${carrinho[p.id]*p.preco}\n`;
-        });
+        produtos.forEach(p => { if(carrinho[p.id] > 0) texto += `${p.nome} x${carrinho[p.id]} - R$ ${carrinho[p.id]*p.preco}\n`; });
         texto += `\nTOTAL: R$ ${atualizarTotal()}`;
         navigator.clipboard.writeText(texto);
         alert("Copiado!");
@@ -305,11 +166,7 @@
 
     async function fecharPedido() {
         const atendente = document.getElementById("atendente").value.trim();
-        if(!atendente) {
-            alert("Nome do atendente obrigatório!");
-            return;
-        }
-
+        if(!atendente) return alert("Nome do atendente obrigatório!");
         let total = atualizarTotal();
         if(total === 0) return alert("Carrinho vazio!");
 
@@ -328,22 +185,8 @@
         document.getElementById("totalRecibo").innerText = "R$ " + total;
         document.getElementById("recibo").style.display = "block";
 
-        const payload = {
-            embeds: [{
-                title: "📝 NOVO PEDIDO",
-                color: 16761871,
-                description: itensDiscord,
-                fields: [{ name: "Atendente", value: atendente, inline: true }, { name: "Total", value: `R$ ${total}`, inline: true }],
-                timestamp: new Date()
-            }]
-        };
-
-        try {
-            await fetch(webhookURL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
-            alert("Pedido enviado!");
-        } catch(e) {
-            alert("Erro no envio!");
-        }
+        const payload = { embeds: [{ title: "📝 NOVO PEDIDO", color: 16761871, description: itensDiscord, fields: [{ name: "Atendente", value: atendente, inline: true }, { name: "Total", value: `R$ ${total}`, inline: true }], timestamp: new Date() }] };
+        try { await fetch(webhookURL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) }); alert("Pedido enviado!"); } catch(e) { alert("Erro no envio!"); }
     }
 </script>
 </body>

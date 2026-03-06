@@ -28,7 +28,7 @@
         }
 
         .categorias { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .categorias button { padding: 12px 20px; border: none; background: #333; color: white; border-radius: 6px; cursor: pointer; font-size: 16px; }
+        .categorias button { padding: 12px 20px; border: none; background: #333; color: white; border-radius: 6px; cursor: pointer; font-size: 16px; transition: 0.2s; }
         .categorias button.ativo { background: #f1c40f; color: black; font-weight: bold; }
 
         .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; max-width: 1200px; margin: auto; }
@@ -73,8 +73,7 @@
 </div>
 
 <div class="categorias">
-    <button onclick="filtrar('todos', this)" class="ativo">Todos</button>
-    <button onclick="filtrar('combo', this)">Combos</button>
+    <button id="btn-combo" onclick="filtrar('combo', this)" class="ativo">Combos</button>
     <button onclick="filtrar('bebida', this)">Bebidas</button>
     <button onclick="filtrar('comida', this)">Comidas</button>
     <button onclick="filtrar('doce', this)">Doces</button>
@@ -124,16 +123,16 @@
 
     let carrinho = {};
     produtos.forEach(p => carrinho[p.id] = 0);
-    let categoriaAtual = "todos";
+    
+    // Agora a categoria padrão é "combo"
+    let categoriaAtual = "combo";
 
-    // 1. Carrega o nome salvo ao abrir a página
     window.onload = function() {
         const salvo = localStorage.getItem("atendenteCaribe");
         if (salvo) document.getElementById("atendente").value = salvo;
         carregar();
     };
 
-    // 2. Salva o nome enquanto o atendente digita
     function salvarAtendente() {
         const nome = document.getElementById("atendente").value;
         localStorage.setItem("atendenteCaribe", nome);
@@ -142,8 +141,11 @@
     function carregar() {
         const menu = document.getElementById("menu");
         menu.innerHTML = "";
-        let lista = produtos.filter(p => categoriaAtual === "todos" || p.categoria === categoriaAtual);
         
+        // Filtra apenas pela categoria selecionada
+        let lista = produtos.filter(p => p.categoria === categoriaAtual);
+        
+        // Mantém itens selecionados no topo da categoria
         lista.sort((a, b) => carrinho[b.id] - carrinho[a.id]);
 
         lista.forEach(p => {
@@ -195,12 +197,18 @@
         if (!atendente.trim()) return alert("⚠️ Digite o nome do atendente!");
 
         let texto = `🍹 Restaurante Caribe\nAtendente: ${atendente}\n\n`;
+        let temItem = false;
         produtos.forEach(p => {
-            if (carrinho[p.id] > 0) texto += `${p.nome} x${carrinho[p.id]} - R$ ${carrinho[p.id] * p.preco}\n`;
+            if (carrinho[p.id] > 0) {
+                texto += `${p.nome} x${carrinho[p.id]} - R$ ${carrinho[p.id] * p.preco}\n`;
+                temItem = true;
+            }
         });
+        if (!temItem) return alert("Carrinho vazio!");
+
         texto += `\nTOTAL: R$ ${atualizarTotal()}`;
         navigator.clipboard.writeText(texto);
-        alert("Copiado!");
+        alert("Conta copiada!");
     }
 
     async function fecharPedido() {

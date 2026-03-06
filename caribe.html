@@ -104,29 +104,32 @@
     }
 
     function carregar() {
-        const menu = document.getElementById("menu");
-        menu.innerHTML = "";
-        let lista = produtos.filter(p => p.categoria === categoriaAtual);
-        lista.sort((a, b) => (carrinho[b.id] || 0) - (carrinho[a.id] || 0));
+    const menu = document.getElementById("menu");
+    menu.innerHTML = "";
 
-        lista.forEach(p => {
-            const qtd = carrinho[p.id] || 0;
-            const div = document.createElement("div");
-            div.className = `card ${qtd > 0 ? "ativo" : ""}`;
-            // CORREÇÃO AQUI: Passando p.id (ID fixo) para a função alterar
-            div.innerHTML = `
-                <div class="nome">${p.nome}</div>
-                <div class="preco">R$ ${p.preco}</div>
-                <div class="controls">
-                    <button onclick="alterar('${p.id}', -1)">-</button>
-                    <span>${qtd}</span>
-                    <button onclick="alterar('${p.id}', 1)">+</button>
-                </div>
-            `;
-            menu.appendChild(div);
-        });
-        atualizarTotal();
-    }
+    let lista = produtos.filter(p => p.categoria === categoriaAtual);
+
+    lista.forEach(p => {
+        const qtd = carrinho[p.id] || 0;
+
+        const div = document.createElement("div");
+        div.className = `card ${qtd > 0 ? "ativo" : ""}`;
+
+        div.innerHTML = `
+            <div class="nome">${p.nome}</div>
+            <div class="preco">R$ ${p.preco}</div>
+            <div class="controls">
+                <button onclick="alterar('${p.id}', -1)">-</button>
+                <span>${qtd}</span>
+                <button onclick="alterar('${p.id}', 1)">+</button>
+            </div>
+        `;
+
+        menu.appendChild(div);
+    });
+
+    atualizarTotal();
+}
 
     function alterar(id, delta) {
         let novaQtd = (carrinho[id] || 0) + delta;
@@ -191,3 +194,4 @@
 </script>
 </body>
 </html>
+

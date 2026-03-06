@@ -3,64 +3,72 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Restaurante Caribe - Painel de Produção</title>
+    <title>Restaurante Caribe - Sistema de Vendas</title>
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f4; margin: 0; padding: 20px; }
-        h1 { text-align: center; margin-bottom: 15px; font-size: 2.5rem; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; color: #333; }
+        h1 { text-align: center; color: #1a1a1a; margin-bottom: 20px; }
 
         .config-atendente {
-            max-width: 400px;
-            margin: 0 auto 20px auto;
-            text-align: center;
+            max-width: 500px;
+            margin: 0 auto 25px auto;
             background: #fff;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
         }
 
         .config-atendente input {
-            width: 80%;
-            padding: 10px;
-            font-size: 16px;
-            border: 2px solid #ccc;
-            border-radius: 5px;
-            text-align: center;
+            width: 90%;
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.3s;
         }
 
-        .categorias { display: flex; justify-content: center; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .categorias button { padding: 12px 20px; border: none; background: #333; color: white; border-radius: 6px; cursor: pointer; font-size: 16px; transition: 0.2s; }
-        .categorias button.ativo { background: #f1c40f; color: black; font-weight: bold; }
+        .config-atendente input:focus { border-color: #f1c40f; }
 
-        .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; max-width: 1200px; margin: auto; }
+        .categorias { display: flex; justify-content: center; gap: 12px; margin-bottom: 30px; flex-wrap: wrap; }
+        .categorias button { 
+            padding: 14px 24px; border: none; background: #2c3e50; color: white; 
+            border-radius: 8px; cursor: pointer; font-size: 16px; font-weight: 600; transition: 0.3s;
+        }
+        .categorias button.ativo { background: #f1c40f; color: #1a1a1a; transform: translateY(-3px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+
+        .grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 20px; max-width: 1200px; margin: auto; }
 
         .card { 
-            background: white; border-radius: 10px; padding: 15px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
-            text-align: center; width: 220px; transition: 0.2s; border: 2px solid transparent; 
+            background: white; border-radius: 12px; padding: 20px; box-shadow: 0 6px 12px rgba(0,0,0,0.08); 
+            text-align: center; width: 240px; border: 2px solid transparent; transition: 0.3s;
         }
-        .card.ativo { background: #ffe066; border: 2px solid #ffcc00; transform: scale(1.02); }
+        .card.ativo { background: #fff9db; border-color: #f1c40f; }
 
-        .nome { font-weight: bold; font-size: 18px; margin-bottom: 8px; color: #222; }
-        .preco { color: #666; margin-bottom: 12px; font-size: 15px; font-weight: bold; }
+        .nome { font-weight: bold; font-size: 20px; margin-bottom: 10px; }
+        .preco { color: #27ae60; margin-bottom: 15px; font-size: 18px; font-weight: bold; }
 
-        .controls { display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .controls button { width: 45px; height: 45px; border: none; background: #222; color: white; font-size: 24px; border-radius: 5px; cursor: pointer; }
-        .controls span { font-size: 24px; font-weight: bold; min-width: 40px; }
+        .controls { display: flex; justify-content: center; align-items: center; gap: 15px; }
+        .controls button { width: 50px; height: 50px; border: none; background: #1a1a1a; color: white; font-size: 28px; border-radius: 10px; cursor: pointer; }
+        .controls span { font-size: 26px; font-weight: bold; min-width: 45px; }
 
-        .total { margin-top: 30px; text-align: center; font-size: 42px; font-weight: bold; color: #1a1a1a; }
-        
-        .botoes { margin-top: 25px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
-        .botoes button { padding: 18px 35px; font-size: 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; transition: 0.2s; }
+        .total-container { margin-top: 50px; text-align: center; padding: 20px; background: #fff; border-radius: 15px; max-width: 400px; margin-left: auto; margin-right: auto; }
+        .total-container span { font-size: 48px; font-weight: 900; color: #2c3e50; }
 
-        .copiar { background: #27ae60; color: white; }
-        .limpar { background: #c0392b; color: white; }
-        .fechar { background: #2980b9; color: white; }
+        .botoes-acoes { margin-top: 30px; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; }
+        .botoes-acoes button { padding: 20px 40px; font-size: 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; transition: 0.2s; color: white; }
+
+        .btn-copiar { background: #16a085; }
+        .btn-limpar { background: #e74c3c; }
+        .btn-fechar { background: #2980b9; }
+        .botoes-acoes button:hover { opacity: 0.9; transform: scale(1.05); }
 
         .recibo { 
-            display: none; max-width: 450px; margin: 40px auto; background: white; padding: 25px; 
-            border-radius: 12px; box-shadow: 0 0 20px rgba(0,0,0,0.15); font-family: 'Courier New', Courier, monospace; 
+            display: none; max-width: 450px; margin: 40px auto; background: white; padding: 30px; 
+            border-radius: 15px; box-shadow: 0 0 30px rgba(0,0,0,0.1); font-family: 'Courier New', Courier, monospace; 
         }
-        .linha { display: flex; justify-content: space-between; margin: 8px 0; font-size: 16px; }
-        hr { border: none; border-top: 1px dashed #333; margin: 15px 0; }
+        .linha { display: flex; justify-content: space-between; margin: 10px 0; font-size: 18px; }
+        hr { border: none; border-top: 2px dashed #eee; margin: 20px 0; }
     </style>
 </head>
 <body>
@@ -68,12 +76,12 @@
 <h1>🍹 Restaurante Caribe</h1>
 
 <div class="config-atendente">
-    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Nome do Atendente:</label>
-    <input type="text" id="atendente" placeholder="Seu nome será salvo..." oninput="salvarAtendente()" autocomplete="off">
+    <label style="display: block; margin-bottom: 8px; font-weight: bold; color: #555;">ATENDENTE RESPONSÁVEL</label>
+    <input type="text" id="atendente" placeholder="Nome do atendente..." oninput="salvarAtendente()" autocomplete="off">
 </div>
 
 <div class="categorias">
-    <button id="btn-combo" onclick="filtrar('combo', this)" class="ativo">Combos</button>
+    <button id="cat-combo" onclick="filtrar('combo', this)" class="ativo">Combos</button>
     <button onclick="filtrar('bebida', this)">Bebidas</button>
     <button onclick="filtrar('comida', this)">Comidas</button>
     <button onclick="filtrar('doce', this)">Doces</button>
@@ -81,17 +89,21 @@
 
 <div class="grid" id="menu"></div>
 
-<div class="total">TOTAL: R$ <span id="total">0</span></div>
+<div class="total-container">
+    <div style="font-size: 18px; color: #7f8c8d; font-weight: bold;">TOTAL DO PEDIDO</div>
+    R$ <span id="total">0</span>
+</div>
 
-<div class="botoes">
-    <button class="copiar" onclick="copiar()">Copiar Conta</button>
-    <button class="limpar" onclick="limpar()">Limpar</button>
-    <button class="fechar" onclick="fecharPedido()">Fechar Pedido</button>
+<div class="botoes-acoes">
+    <button class="btn-copiar" onclick="copiar()">Copiar Conta</button>
+    <button class="btn-limpar" onclick="limpar()">Limpar Itens</button>
+    <button class="btn-fechar" onclick="fecharPedido()">Fechar Pedido</button>
 </div>
 
 <div class="recibo" id="recibo">
-    <h2 style="text-align: center;">RECIBO DE VENDA</h2>
-    <div id="dadosAtendente" style="text-align: center; margin-bottom: 10px; font-weight: bold;"></div>
+    <h2 style="text-align: center; margin-top: 0;">RECIBO CARIBE</h2>
+    <div id="dadosAtendente" style="text-align: center; margin-bottom: 15px; font-size: 16px;"></div>
+    <hr>
     <div id="itensRecibo"></div>
     <hr>
     <div class="linha">
@@ -103,28 +115,27 @@
 <script>
     const webhookURL = "https://discord.com/api/webhooks/1479621593016565810/JAhJ4fNKhJEdrXZIxu4ylBVoHrrSvhSEEoOZ3cmgCVjsaLyrK-ITWZWYUolNisZGzOV4";
 
+    // Banco de dados com IDs ÚNICOS E FIXOS
     const produtos = [
-        {id: "p0", nome:"Combo P", preco:3000, categoria:"combo"},
-        {id: "p1", nome:"Combo Fury", preco:8000, categoria:"combo"},
-        {id: "p2", nome:"Combo M", preco:6000, categoria:"combo"},
-        {id: "p3", nome:"Suco de Limão", preco:1500, categoria:"bebida"},
-        {id: "p4", nome:"Suco de Laranja", preco:1500, categoria:"bebida"},
-        {id: "p5", nome:"Cola", preco:1500, categoria:"bebida"},
-        {id: "p6", nome:"Taco", preco:1000, categoria:"comida"},
-        {id: "p7", nome:"Hamburguer", preco:1000, categoria:"comida"},
-        {id: "p8", nome:"Pizza", preco:1500, categoria:"comida"},
-        {id: "p9", nome:"Batata Frita", preco:1000, categoria:"comida"},
-        {id: "p10", nome:"Cupcake", preco:1000, categoria:"doce"},
-        {id: "p11", nome:"Marshmallow", preco:1000, categoria:"doce"},
-        {id: "p12", nome:"Bubalão Rosa", preco:1000, categoria:"doce"},
-        {id: "p13", nome:"Bubalão Azul", preco:1000, categoria:"doce"},
-        {id: "p14", nome:"Bubalão Amarelo", preco:1000, categoria:"doce"}
+        {id: "prod_0", nome:"Combo P", preco:3000, categoria:"combo"},
+        {id: "prod_1", nome:"Combo Fury", preco:8000, categoria:"combo"},
+        {id: "prod_2", nome:"Combo M", preco:6000, categoria:"combo"},
+        {id: "prod_3", nome:"Suco de Limão", preco:1500, categoria:"bebida"},
+        {id: "prod_4", nome:"Suco de Laranja", preco:1500, categoria:"bebida"},
+        {id: "prod_5", nome:"Cola", preco:1500, categoria:"bebida"},
+        {id: "prod_6", nome:"Taco", preco:1000, categoria:"comida"},
+        {id: "prod_7", nome:"Hamburguer", preco:1000, categoria:"comida"},
+        {id: "prod_8", nome:"Pizza", preco:1500, categoria:"comida"},
+        {id: "prod_9", nome:"Batata Frita", preco:1000, categoria:"comida"},
+        {id: "prod_10", nome:"Cupcake", preco:1000, categoria:"doce"},
+        {id: "prod_11", nome:"Marshmallow", preco:1000, categoria:"doce"},
+        {id: "prod_12", nome:"Bubalão Rosa", preco:1000, categoria:"doce"},
+        {id: "prod_13", nome:"Bubalão Azul", preco:1000, categoria:"doce"},
+        {id: "prod_14", nome:"Bubalão Amarelo", preco:1000, categoria:"doce"}
     ];
 
     let carrinho = {};
     produtos.forEach(p => carrinho[p.id] = 0);
-    
-    // Agora a categoria padrão é "combo"
     let categoriaAtual = "combo";
 
     window.onload = function() {
@@ -134,24 +145,23 @@
     };
 
     function salvarAtendente() {
-        const nome = document.getElementById("atendente").value;
-        localStorage.setItem("atendenteCaribe", nome);
+        localStorage.setItem("atendenteCaribe", document.getElementById("atendente").value);
     }
 
     function carregar() {
         const menu = document.getElementById("menu");
         menu.innerHTML = "";
         
-        // Filtra apenas pela categoria selecionada
         let lista = produtos.filter(p => p.categoria === categoriaAtual);
         
-        // Mantém itens selecionados no topo da categoria
+        // Ordenação lógica: itens com quantidade > 0 ficam no topo da categoria
         lista.sort((a, b) => carrinho[b.id] - carrinho[a.id]);
 
         lista.forEach(p => {
             const qtd = carrinho[p.id];
             const div = document.createElement("div");
             div.className = `card ${qtd > 0 ? "ativo" : ""}`;
+            // IMPORTANTE: O onclick passa a STRING do ID fixo
             div.innerHTML = `
                 <div class="nome">${p.nome}</div>
                 <div class="preco">R$ ${p.preco}</div>
@@ -166,10 +176,11 @@
         atualizarTotal();
     }
 
-    function alterar(id, delta) {
-        let novaQtd = (carrinho[id] || 0) + delta;
-        carrinho[id] = novaQtd < 0 ? 0 : novaQtd;
-        carregar();
+    function alterar(idProduto, delta) {
+        // Busca o produto pelo ID no carrinho e altera
+        let novaQtd = (carrinho[idProduto] || 0) + delta;
+        carrinho[idProduto] = novaQtd < 0 ? 0 : novaQtd;
+        carregar(); // Renderiza novamente com os dados atualizados
     }
 
     function atualizarTotal() {
@@ -187,34 +198,34 @@
     }
 
     function limpar() {
+        if(!confirm("Deseja zerar os itens do pedido?")) return;
         produtos.forEach(p => carrinho[p.id] = 0);
         document.getElementById("recibo").style.display = "none";
         carregar();
     }
 
     function copiar() {
-        const atendente = document.getElementById("atendente").value;
-        if (!atendente.trim()) return alert("⚠️ Digite o nome do atendente!");
+        const atendente = document.getElementById("atendente").value.trim();
+        if (!atendente) return alert("⚠️ Digite o nome do atendente!");
 
-        let texto = `🍹 Restaurante Caribe\nAtendente: ${atendente}\n\n`;
+        let texto = `🍹 *RESTAURANTE CARIBE*\n👤 Atendente: ${atendente}\n\n`;
         let temItem = false;
         produtos.forEach(p => {
             if (carrinho[p.id] > 0) {
-                texto += `${p.nome} x${carrinho[p.id]} - R$ ${carrinho[p.id] * p.preco}\n`;
+                texto += `• ${p.nome} (x${carrinho[p.id]}) - R$ ${carrinho[p.id] * p.preco}\n`;
                 temItem = true;
             }
         });
-        if (!temItem) return alert("Carrinho vazio!");
-
-        texto += `\nTOTAL: R$ ${atualizarTotal()}`;
-        navigator.clipboard.writeText(texto);
-        alert("Conta copiada!");
+        if (!temItem) return alert("O carrinho está vazio!");
+        texto += `\n*TOTAL: R$ ${atualizarTotal()}*`;
+        
+        navigator.clipboard.writeText(texto).then(() => alert("Conta copiada!"));
     }
 
     async function fecharPedido() {
         const atendente = document.getElementById("atendente").value.trim();
         if (!atendente) {
-            alert("⚠️ BLOQUEADO: Informe o atendente!");
+            alert("⚠️ ERRO: O nome do atendente é obrigatório!");
             document.getElementById("atendente").focus();
             return;
         }
@@ -232,35 +243,32 @@
             }
         });
 
-        if (total === 0) return alert("Carrinho vazio!");
+        if (total === 0) return alert("Adicione pelo menos um item!");
 
-        document.getElementById("dadosAtendente").innerHTML = `ATENDENTE: ${atendente}`;
+        document.getElementById("dadosAtendente").innerHTML = `<b>ATENDENTE:</b> ${atendente.toUpperCase()}`;
         document.getElementById("itensRecibo").innerHTML = listaHtml;
         document.getElementById("totalRecibo").innerText = "R$ " + total;
         document.getElementById("recibo").style.display = "block";
 
+        // Envio para o Webhook do Discord
         const payload = {
             embeds: [{
-                title: "📝 NOVO PEDIDO - Restaurante Caribe",
-                color: 16761871, 
+                title: "✅ NOVO PEDIDO FINALIZADO",
+                color: 3066993, // Verde
                 description: itensDiscord,
                 fields: [
                     { name: "👤 Atendente", value: atendente, inline: true },
-                    { name: "💰 Valor Total", value: `**R$ ${total}**`, inline: true }
+                    { name: "💰 Total", value: `**R$ ${total}**`, inline: true }
                 ],
                 timestamp: new Date()
             }]
         };
 
         try {
-            await fetch(webhookURL, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            alert("Pedido enviado com sucesso!");
-        } catch (error) {
-            alert("Erro ao conectar ao Discord.");
+            await fetch(webhookURL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+            alert("Sucesso! Pedido enviado para o Discord.");
+        } catch (e) {
+            alert("Erro ao enviar para o Discord, mas o recibo foi gerado.");
         }
     }
 </script>
